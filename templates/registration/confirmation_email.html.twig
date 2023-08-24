@@ -1,0 +1,26 @@
+{% extends 'baseEmail.html.twig' %}
+{% block title %}{{ email.subject }}{% endblock %}
+{% block body %}
+<div class="body">
+    <div class="container">
+        <div class="header text-center">
+                <img src="{{ email.image('@images/logo_.png') }}" alt="Knarf Logo">
+        </div>
+        <div class="content">
+            <h1 class="text-center">Enchanté {{ user.username }}!</h1>
+            <p class="block">
+                Bienvenue chez <strong>Knarf Media</strong>, nous sommes impatients de lire votre première publication.                
+            </p>
+        </div>
+        <div class="footer">
+            <p class="block">
+                À votre santé,<br><br>
+                Votre <em>Équipe Knarf Media</em>
+            </p>
+            <p class="block bottom text-center">
+                Expédié avec ❤️ par Knarf Media
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
