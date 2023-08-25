@@ -114,12 +114,12 @@ class Publication
     private $filePath; 
     
     #[Vich\UploadableField(
-    mapping: "media_object",
-    fileNameProperty: "filePath",
-    size: "size", 
-    mimeType: "mimeType", 
-    originalName: "originalName",
-    dimensions: "dimensions"
+    mapping: 'media_object',
+    fileNameProperty: 'filePath',
+    size: 'size', 
+    mimeType: 'mimeType', 
+    originalName: 'originalName',
+    dimensions: 'dimensions'
     )]
     private ?File $file = null;
     
