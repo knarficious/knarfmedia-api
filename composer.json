@@ -5,7 +5,7 @@
 		"php" : ">=8.2",
 		"ext-ctype" : "*",
 		"ext-iconv" : "*",
-		"ext-intl"	: "*", 
+		"ext-intl" : "*",
 		"ext-mbstring" : "*",
 		"api-platform/core" : "^3.1",
 		"doctrine/doctrine-bundle" : "^2.7",
