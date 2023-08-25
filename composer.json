@@ -88,5 +88,18 @@
 			"require" : "6.3.*",
 			"docker" : false
 		}
-	}
+	},
+	"scripts": {
+        "auto-scripts": {
+            "cache:clear": "symfony-cmd",
+            "assets:install --symlink --relative %PUBLIC_DIR%": "symfony-cmd"
+        },
+        "post-install-cmd": [
+            "@auto-scripts",
+            "chmod -R 777 public/"
+        ],
+        "post-update-cmd": [
+            "@auto-scripts"
+        ]
+    }
 }
