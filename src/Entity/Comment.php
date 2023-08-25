@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\ApiProperty;
@@ -14,7 +15,18 @@ use App\Repository\CommentRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use App\Controller\PostCommentController;
-#[ApiResource(operations: [new Get(), new Put(), new Delete(), new GetCollection(), new Post()], denormalizationContext: ['groups' => ['write']], mercure: true, normalizationContext: ['groups' => ['comment:read']])]
+#[ApiResource(
+operations: [
+    new Get(),
+    new GetCollection(),
+    new Post(security: "is_granted('ROLE_USER')"),
+    new Put(security: "is_granted('ROLE_ADMIN') or object.author == user"),
+    new Patch(security: "is_granted('ROLE_ADMIN') or object.author == user"),
+    new Delete(security: "is_granted('ROLE_ADMIN') or object.author == user")
+], 
+denormalizationContext: ['groups' => ['write']], 
+mercure: true, 
+normalizationContext: ['groups' => ['comment:read']])]
 #[ORM\Entity(repositoryClass: CommentRepository::class)]
 class Comment
 {

@@ -13,7 +13,17 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiFilter;
 use App\Repository\TagRepository;
 use Doctrine\ORM\Mapping as ORM;
-#[ApiResource(mercure: true)]
+#[ApiResource(
+mercure: true,
+operations: [
+    new Get(),
+    new GetCollection(),
+    new Post(security: "is_granted('ROLE_USER')"),
+    new Put(security: "is_granted('ROLE_USER')"),
+    new Patch(security: "is_granted('ROLE_USER')"),
+    new Delete(security: "is_granted('ROLE_ADMIN')")
+]
+)]
 #[ORM\Entity(repositoryClass: TagRepository::class)]
 class Tag
 {
