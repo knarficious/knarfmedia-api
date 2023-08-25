@@ -113,7 +113,14 @@ class Publication
     #[Groups(['read', 'post:image'])]
     private $filePath; 
     
-    #[Vich\UploadableField(mapping: "media_object", fileNameProperty: "filePath")]
+    #[Vich\UploadableField(
+    mapping: "media_object",
+    fileNameProperty: "filePath",
+    size: "size", 
+    mimeType: "mimeType", 
+    originalName: "originalName",
+    dimensions: "dimensions"
+    )]
     private ?File $file = null;
     
     public function __construct()
