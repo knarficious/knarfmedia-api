@@ -116,10 +116,7 @@ class Publication
     #[Vich\UploadableField(
     mapping: 'media_object',
     fileNameProperty: 'filePath',
-    size: 'size', 
     mimeType: 'mimeType', 
-    originalName: 'originalName',
-    dimensions: 'dimensions'
     )]
     private ?File $file = null;
     
@@ -257,5 +254,16 @@ class Publication
         $this->filePath = $filePath;
         return $this;
     }
+    
+    public function getMimeType(): ?string
+    {
+        return $this->mimeType;
+    }
+    
+    public function setMimeType(?string $mimeType)
+    {
+        $this->mimeType = $mimeType;
+    }
+    
 
 }
