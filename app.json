@@ -1,4 +1,11 @@
 {
+  "name": "API de Knarf Media",
+  "description": "This app does one little thing, and does it well.",
+  "keywords": [
+    "symfony",
+    "api-platform",
+    "php"
+  ],
   "success_url": "/",
   "env": {
     "APP_ENV": "prod",
