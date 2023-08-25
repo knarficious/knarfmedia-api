@@ -25,7 +25,6 @@ use App\Controller\PostCommentController;
 
 #[Vich\Uploadable]
 #[ApiResource(
-security: "is_granted('ROLE_USER')",
 operations: [
     new Get(), 
     new Post(
@@ -57,6 +56,7 @@ operations: [
     new Delete(security: "is_granted('ROLE_ADMIN') or object.author == user"),
     new GetCollection(),
     new Post(
+        security: "is_granted('ROLE_USER')",
         controller: PostController::class)
 ],
 normalizationContext: ['groups' => ['read', 'read:Publication']],
@@ -111,9 +111,7 @@ class Publication
     
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     #[Groups(['read', 'post:image'])]
-    private $filePath;    
-
-    private $fileUrl;
+    private $filePath; 
     
     #[Vich\UploadableField(mapping: "media_object", fileNameProperty: "filePath")]
     private ?File $file = null;
@@ -252,22 +250,5 @@ class Publication
         $this->filePath = $filePath;
         return $this;
     }
-    /**
-     * 
-     * @return string|NULL
-     */
-    public function getFileUrl()
-    {
-        return $this->fileUrl;
-    }
-    /**
-     * 
-     * @param string $fileUrl|NULL
-     * @return Publication
-     */
-    public function setFileUrl($fileUrl)
-    {
-        $this->fileUrl = $fileUrl;
-        return $this;
-    }
+
 }
