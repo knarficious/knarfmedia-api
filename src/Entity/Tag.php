@@ -13,6 +13,7 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiFilter;
 use App\Repository\TagRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 #[ApiResource(
 mercure: true,
 operations: [
@@ -25,6 +26,7 @@ operations: [
 ]
 )]
 #[ORM\Entity(repositoryClass: TagRepository::class)]
+#[UniqueEntity("name")]
 class Tag
 {
     #[ORM\Id]

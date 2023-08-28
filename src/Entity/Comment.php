@@ -11,15 +11,29 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\Link;
 use App\Repository\CommentRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use App\Controller\PostCommentController;
+use App\Entity\Publication;
+
 #[ApiResource(
+
 operations: [
     new Get(),
     new GetCollection(),
-    new Post(security: "is_granted('ROLE_USER')"),
+    new Post(security: "is_granted('ROLE_USER')"),    
+    new Post(
+        security: "is_granted('ROLE_USER')",
+        controller: PostCommentController::class,
+        uriTemplate: '/publications/{id}/commenter',
+        uriVariables: [
+            'id' => new Link(
+                fromClass: Publication::class,
+                fromProperty: 'comments')
+        ]
+        ),
     new Put(security: "is_granted('ROLE_ADMIN') or object.author == user"),
     new Patch(security: "is_granted('ROLE_ADMIN') or object.author == user"),
     new Delete(security: "is_granted('ROLE_ADMIN') or object.author == user")
@@ -34,20 +48,27 @@ class Comment
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
     private $id;
+    
     #[ORM\ManyToOne(targetEntity: Publication::class, inversedBy: 'comments')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['comment:read', 'write'])]
-    private $post;
+    #[Groups(['comment:read'])]
+    #[Link(toProperty: 'post')]
+    public Publication $post;
+    
     #[ORM\Column(type: 'text')]
     #[Groups(['write', 'comment:read'])]
     private $content;
+    
     #[ORM\Column(type: 'datetime_immutable')]
-    #[Groups(['comment:read', 'write'])]
+    #[Groups(['comment:read'])]
     private $publishedAt;
+    
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['comment:read', 'write'])]
-    private $author;
+    #[Groups(['comment:read'])]
+    #[Link(toProperty: 'author')]
+    public User $author;
+    
     public function getId() : ?int
     {
         return $this->id;
