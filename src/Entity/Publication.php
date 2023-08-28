@@ -5,11 +5,13 @@ namespace App\Entity;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\Link;
 use Symfony\Component\Serializer\Annotation\Groups;
 use App\Repository\PostRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -53,6 +55,7 @@ operations: [
             ]
         ),
     new Put(security: "is_granted('ROLE_ADMIN') or object.author == user"),
+    new Patch(security: "is_granted('ROLE_ADMIN') or object.author == user"),
     new Delete(security: "is_granted('ROLE_ADMIN') or object.author == user"),
     new GetCollection(),
     new Post(
@@ -95,12 +98,12 @@ class Publication
     #[Groups(['read'])]
     private ?\DateTimeInterface $updatedAt = null;
     
-    #[ApiProperty(fetchEager: true)]
     #[ORM\OneToMany(mappedBy: 'post', targetEntity: Comment::class, orphanRemoval: true)]
     #[Groups(['read'])]
-    private $comments;
+    public $comments = [];
     
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'posts')]
+    #[ORM\JoinColumn(nullable: false)]
     #[Groups(['read', 'post:update'])]
     public User $author;
     
