@@ -15,7 +15,6 @@ use App\Repository\TagRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 #[ApiResource(
-mercure: true,
 operations: [
     new Get(),
     new GetCollection(),
