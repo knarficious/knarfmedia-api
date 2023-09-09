@@ -32,7 +32,7 @@ final class VerifyEmailAction extends AbstractController
     
     public function __invoke(Request $request, UserRepository $userRepository): User
     {
-        $userId = $request->get('email');        
+        $userId = $request->query->get('email');        
 
         $user = $userRepository->findOneBy(['email' => $userId]);        
 
