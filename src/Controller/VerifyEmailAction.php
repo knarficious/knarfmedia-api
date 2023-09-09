@@ -30,15 +30,15 @@ final class VerifyEmailAction extends AbstractController
         //$this->emailVerifier = $emailVerifier;
     }
     
-    public function __invoke(Request $request, User $user): User
+    public function __invoke(Request $request, UserRepository $userRepository): User
     {
-//         $userId = $request->get('userId');        
+        $userId = $request->get('email');        
 
-//         $user = $userRepository->findOneBy(['username' => $userId]);        
+        $user = $userRepository->findOneBy(['email' => $userId]);        
 
         // validate email confirmation link, sets User::isVerified=true and persists
         try {
-            $this->emailVerifier->handleEmailConfirmation($request);
+            $this->emailVerifier->handleEmailConfirmation($request, $user);
         } catch (VerifyEmailExceptionInterface $exception) {
             //$this->addFlash('verify_email_error', $exception->getReason());
             

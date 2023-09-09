@@ -46,9 +46,8 @@ class EmailVerifier
     /**
      * @throws VerifyEmailExceptionInterface
      */
-    public function handleEmailConfirmation(Request $request): void
-    {
-        $user = $this->entityManager->find(User::class, ["email" => $request->query->get("email")]);       
+    public function handleEmailConfirmation(Request $request, User $user): void
+    {  
                     
             $this->verifyEmailHelper->validateEmailConfirmation($request->getUri(), $user->getUserIdentifier(), $user->getUserIdentifier());
             
