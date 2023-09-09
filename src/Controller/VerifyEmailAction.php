@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 #[AsController]
 #[Route(
-    path: '/verify.{_format}',
+    path: '/verify',
     name: 'app_verify_email',
     methods: ['GET'],
     defaults: [
