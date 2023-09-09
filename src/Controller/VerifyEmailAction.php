@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 #[AsController]
 #[Route(
@@ -30,7 +31,7 @@ final class VerifyEmailAction extends AbstractController
         //$this->emailVerifier = $emailVerifier;
     }
     
-    public function __invoke(Request $request, UserRepository $userRepository): Response
+    public function __invoke(Request $request, UserRepository $userRepository): RedirectResponse
     {
         $userId = $request->query->get('email');
 
@@ -39,15 +40,15 @@ final class VerifyEmailAction extends AbstractController
         // validate email confirmation link, sets User::isVerified=true and persists
         try {
             $this->emailVerifier->handleEmailConfirmation($request, $user);
-        } catch (VerifyEmailExceptionInterface $exception) {
-            //$this->addFlash('verify_email_error', $exception->getReason());
+        } catch (VerifyEmailExceptionInterface $exception) {            
             
             return $this->json(['data' => $exception->getReason()]);
         }
-        $response = new Response();
+        $response = new RedirectResponse();
         $response->setContent('Email confirme');
         $response->headers->set('Content-Type', 'text/html');
         $response->setStatusCode(Response::HTTP_OK);
+        $response->setTargetUrl($this->generateUrl('publications'));
         
         return $response;
      }
