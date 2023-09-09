@@ -49,11 +49,10 @@ final class VerifyEmailAction extends AbstractController
             
         } catch (VerifyEmailExceptionInterface $exception) {            
             
-            $response = new RedirectResponse();
+            $response = new RedirectResponse($this->generateUrl('publications'));
             $response->setContent($exception->getReason());
             $response->headers->set('Content-Type', 'text/html');
             $response->setStatusCode(Response::HTTP_INTERNAL_SERVER_ERROR);
-            $response->setTargetUrl($this->generateUrl('publications'));
             
             return $response;
         }
