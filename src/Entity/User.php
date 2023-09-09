@@ -27,6 +27,7 @@ use App\Controller\RegisterAction;
 #[ApiResource(
 operations: [
     new Get(uriTemplate: '/users/{id}'),
+    //new Get(name: '_api_/verify', routeName: 'app_verify_email'),
     new GetCollection(uriTemplate: '/users'),
     new Post(uriTemplate: 'users', controller: RegisterAction::class),    
 #new Post(processor: UserPasswordHasher::class, validationContext: ['groups' => ['Default', 'user:create']]),
@@ -76,6 +77,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $email = null;
 
     #[ORM\Column(type: 'boolean')]
+    #[Groups(['user:read'])]
     private ?bool $isVerified = false;
     
     public function getId(): ?int

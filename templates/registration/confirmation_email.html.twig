@@ -11,6 +11,10 @@
             <p class="block">
                 Bienvenue chez <strong>Knarf Media</strong>, nous sommes impatients de lire votre première publication.                
             </p>
+            <p>Veuillez confirmer votre email en cliquant sur ce lien: <br><br>
+                <a href="{{ signedUrl }}">Confirmer mon Email</a>.
+                Ce lien expirera dans {{ expiresAtMessageKey|trans(expiresAtMessageData, 'VerifyEmailBundle') }}.
+            </p>
         </div>
         <div class="footer">
             <p class="block">

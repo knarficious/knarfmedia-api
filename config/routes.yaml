@@ -1,6 +1,9 @@
 auth:
     path: /auth
     methods: ['POST']
+app_verify_email:
+    path: /verify
+    methods: ['GET']
 controllers:
     resource:
         path: ../src/Controller/

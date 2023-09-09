@@ -4,28 +4,24 @@ namespace App\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use App\Entity\Comment;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpKernel\Attribute\AsController;
+use App\Repository\PostRepository;
 
 #[AsController]
 final class PostCommentController extends AbstractController
 {
-    public function __invoke(Request $request)
+    public function __invoke(Request $request, PostRepository $repository)
     {
-       $data = $request->attributes->get('data');
-       
-       if(!$data instanceof Comment)
-       {
-           throw new \RuntimeException('L\'objet n\'est pas une instance de Comment');
-       }
-       
-       //dd($data);
+       $data = json_decode($request->getContent(), true); 
        
        $comment = new Comment();
-       $comment->setContent($data->getContent());
+       $comment->setContent($data['content']);
        $comment->setPublishedAt(new \DateTimeImmutable());
        $comment->setAuthor($this->getUser());
-       $comment->setPost($data->getPost());
+       $post = $repository->findOneBy(['id' => $request->get('id')]);
+       $comment->setPost($post);
        
-       return $data;
+       return $comment;
     }
 }
 

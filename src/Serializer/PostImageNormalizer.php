@@ -34,5 +34,10 @@ final class PostImageNormalizer implements ContextAwareNormalizerInterface, Norm
         
         return $this->normalizer->normalize($object, $format, $context);
     }
+    
+    public function getSupportedTypes(?string $format): array
+    {
+        return [];
+    }
 
 }
