@@ -9,7 +9,7 @@ use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 #[AsController]
 #[Route(
@@ -30,7 +30,7 @@ final class VerifyEmailAction extends AbstractController
         //$this->emailVerifier = $emailVerifier;
     }
     
-    public function __invoke(Request $request, UserRepository $userRepository): User
+    public function __invoke(Request $request, UserRepository $userRepository): Response
     {
         $userId = $request->query->get('email');
 
@@ -44,7 +44,11 @@ final class VerifyEmailAction extends AbstractController
             
             return $this->json(['data' => $exception->getReason()]);
         }
+        $response = new Response();
+        $response->setContent('Email confirme');
+        $response->headers->set('Content-Type', 'text/html');
+        $response->setStatusCode(Response::HTTP_OK);
         
-        return $user;
+        return $response;
      }
 }
