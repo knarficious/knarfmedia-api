@@ -45,19 +45,20 @@ final class VerifyEmailAction extends AbstractController
             $response->setContent('Email confirme');
             $response->headers->set('Content-Type', 'text/html');
             $response->setStatusCode(Response::HTTP_OK);
-            $response->setTargetUrl($this->generateUrl('publications'));
+            $response->setTargetUrl($this->generateUrl('api_doc'));
             
         } catch (VerifyEmailExceptionInterface $exception) {            
             
-            $response = new RedirectResponse($this->generateUrl('publications'));
+            $response = new RedirectResponse($this->generateUrl('api_doc'));
             $response->setContent($exception->getReason());
             $response->headers->set('Content-Type', 'text/html');
             $response->setStatusCode(Response::HTTP_INTERNAL_SERVER_ERROR);
             
             return $response;
         }
-
         
         return $response;
      }
+     
+     
 }
