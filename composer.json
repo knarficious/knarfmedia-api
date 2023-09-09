@@ -5,6 +5,7 @@
 		"php" : ">=8.1",
 		"ext-ctype" : "*",
 		"ext-iconv" : "*",
+		"ext-intl" : "*",
 		"ext-mbstring" : "*",
 		"api-platform/core" : "^3.1",
 		"doctrine/doctrine-bundle" : "^2.7",
@@ -87,20 +88,17 @@
 			"docker" : false
 		}
 	},
-	"scripts" : {
+	"scripts": {
         "auto-scripts": {
             "cache:clear": "symfony-cmd",
-            "assets:install %PUBLIC_DIR%": "symfony-cmd"
+            "assets:install --symlink --relative %PUBLIC_DIR%": "symfony-cmd"
         },
-        "post-install-cmd" : [
-                "@auto-scripts",
-                "chmod -R 777 public/",
-                "chmod -R 777 config/",
-                "mkdir -p config/jwt"
-                ],
+        "post-install-cmd": [
+            "@auto-scripts",
+            "chmod -R 777 public/"
+        ],
         "post-update-cmd": [
             "@auto-scripts"
-        ],
-        "compile" : "@php bin/console lexik:jwt:generate-keypair --overwrite --quiet --env prod"
+        ]
     }
 }
