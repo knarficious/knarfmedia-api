@@ -48,7 +48,7 @@ class EmailVerifier
      */
     public function handleEmailConfirmation(Request $request, UserInterface $user): void
     {
-        $dbUser = $this->entityManager->find(User::class, ["username" => $request->query->get("username")]);
+        $dbUser = $this->entityManager->find(User::class, ["username" => $request->query->get("userId")]);
         
         if ($dbUser instanceof $user) {
             
