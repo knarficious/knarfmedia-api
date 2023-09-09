@@ -38,7 +38,7 @@ final class VerifyEmailAction extends AbstractController
 
         // validate email confirmation link, sets User::isVerified=true and persists
         try {
-            $this->emailVerifier->handleEmailConfirmation($request, $user);
+            $this->emailVerifier->handleEmailConfirmation($request);
         } catch (VerifyEmailExceptionInterface $exception) {
             //$this->addFlash('verify_email_error', $exception->getReason());
             

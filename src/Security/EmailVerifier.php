@@ -30,7 +30,7 @@ class EmailVerifier
             $verifyEmailRouteName,
             $user->getUserIdentifier(),
             $user->getEmail(),
-            ['userId' => $user->getUserIdentifier()]
+            ['email' => $user->getUserIdentifier()]
         );
 
         $context = $email->getContext();
@@ -46,20 +46,18 @@ class EmailVerifier
     /**
      * @throws VerifyEmailExceptionInterface
      */
-    public function handleEmailConfirmation(Request $request, UserInterface $user): void
+    public function handleEmailConfirmation(Request $request): void
     {
-        $dbUser = $this->entityManager->find(User::class, ["username" => $request->query->get("userId")]);
-        
-        if ($dbUser instanceof $user) {
-            
-            $this->verifyEmailHelper->validateEmailConfirmation($request->getUri(), $user->getId(), $user->getEmail());
+        $user = $this->entityManager->find(User::class, ["email" => $request->query->get("email")]);       
+                    
+            $this->verifyEmailHelper->validateEmailConfirmation($request->getUri(), $user->getUserIdentifier(), $user->getUserIdentifier());
             
             
             $user->setIsVerified(true);
             
             $this->entityManager->persist($user);
             $this->entityManager->flush();
-        }
+        
         
 
     }
