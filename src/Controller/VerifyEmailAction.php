@@ -16,10 +16,10 @@ use Symfony\Component\HttpFoundation\JsonResponse;
     path: '/verify',
     name: 'app_verify_email',
     methods: ['GET'],
-    defaults: [
-        '_api_resource_class' => User::class,
-        '_api_operation_name' => '_api_/verify'
-    ]
+//     defaults: [
+//         '_api_resource_class' => User::class,
+//         '_api_operation_name' => '_api_/verify'
+//     ]
     )]
 final class VerifyEmailAction extends AbstractController
 {
