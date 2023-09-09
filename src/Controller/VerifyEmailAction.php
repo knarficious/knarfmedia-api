@@ -39,10 +39,7 @@ final class VerifyEmailAction extends AbstractController
 
         // validate email confirmation link, sets User::isVerified=true and persists
         try {
-            $this->emailVerifier->handleEmailConfirmation($request, $user);
-            
-            $response = new RedirectResponse('/email/validation');
-            $response->setContent('Email confirme');
+            $this->emailVerifier->handleEmailConfirmation($request, $user);  
             
         } catch (VerifyEmailExceptionInterface $exception) {            
             
@@ -54,7 +51,7 @@ final class VerifyEmailAction extends AbstractController
             return $response;
         }
         
-        return $response;
+        return $this->redirectToRoute('app_email_validation', [], Response::HTTP_MOVED_PERMANENTLY);
      }
      
      
