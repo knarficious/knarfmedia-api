@@ -41,7 +41,7 @@ final class VerifyEmailAction extends AbstractController
         try {
             $this->emailVerifier->handleEmailConfirmation($request, $user);
             
-            $response = new RedirectResponse('app_email_validation');
+            $response = new RedirectResponse('/email/validation');
             $response->setContent('Email confirme');
             
         } catch (VerifyEmailExceptionInterface $exception) {            
