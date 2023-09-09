@@ -41,11 +41,10 @@ final class VerifyEmailAction extends AbstractController
         try {
             $this->emailVerifier->handleEmailConfirmation($request, $user);
             
-            $response = new RedirectResponse();
+            $response = new RedirectResponse($this->generateUrl('api_doc'));
             $response->setContent('Email confirme');
             $response->headers->set('Content-Type', 'text/html');
             $response->setStatusCode(Response::HTTP_OK);
-            $response->setTargetUrl($this->generateUrl('api_doc'));
             
         } catch (VerifyEmailExceptionInterface $exception) {            
             
