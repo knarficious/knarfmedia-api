@@ -23,11 +23,16 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Lexik\Bundle\JWTAuthenticationBundle\Security\User\JWTUserInterface;
 use App\State\UserProvider;
 use App\Controller\RegisterAction;
+use App\Controller\VerifyEmailAction;
 
 #[ApiResource(
 operations: [
     new Get(uriTemplate: '/users/{id}'),
-    new Get(name: '_api_/verify', routeName: 'app_verify_email'),
+    new Get(
+        name: '_api_/verify',
+        controller: VerifyEmailAction::class,
+        uriTemplate: '/verify'
+        ),
     new GetCollection(uriTemplate: '/users'),
     new Post(uriTemplate: 'users', controller: RegisterAction::class),    
 #new Post(processor: UserPasswordHasher::class, validationContext: ['groups' => ['Default', 'user:create']]),
