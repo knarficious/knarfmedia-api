@@ -40,53 +40,13 @@ final class RegisterAction extends AbstractController
         // generate a signed url and email it to the user
         $this->emailVerifier->sendEmailConfirmation('app_verify_email', $user,
             (new TemplatedEmail())
-            ->from(new Address('leknarf@hotmail.com', 'Knarf Media admin'))
+            ->from(new Address('no-reply@knarficious.fr', 'Knarf Media'))
             ->to($user->getEmail())
             ->subject('Veuillez confirmer votre Email')
             ->htmlTemplate('registration/confirmation_email.html.twig')
             ->context(['user' => $user])
             );
-        return $user;
-        
-    }   
-  
-
-//     #[Route(
-//         path: '/verify',
-//         name: 'app_verify_email',
-//         methods: ['GET'],
-//         defaults: [
-//             '_api_resource_class' => User::class,
-//             '_api_operation_name' => '_api_/verify'
-//         ]
-//         )]
-//     public function verifyUserEmail(Request $request, UserRepository $userRepository): Response
-//     {
-//         $userId = $request->get('userId');
-        
-//         if(null === $userId)
-//         {
-//             return new JsonResponse(['data' => 'id not found'], 404);
-//         }
-        
-//         $user = $userRepository->findOneBy(['username' => $userId]);
-        
-//         if (null === $user)
-//         {
-//             return new JsonResponse(['data' => 'id not found'], 404);
-//         }
-        
-//         // validate email confirmation link, sets User::isVerified=true and persists
-//         try {
-//             $this->emailVerifier->handleEmailConfirmation($request, $user);
-//         } catch (VerifyEmailExceptionInterface $exception) {
-//             //$this->addFlash('verify_email_error', $exception->getReason());
-            
-//             return new JsonResponse(['data' => $exception->getReason()], 500);
-//         }        
-        
-//         return new JsonResponse(['data' => 'compte'.$user->getEmail().'confirmé']);
-//     }
-
+        return $user;        
+    }
 }
 
