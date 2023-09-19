@@ -10,7 +10,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\ApiProperty;
-use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\OpenApi\Model;
 use ApiPlatform\Metadata\Link;
 use Symfony\Component\Serializer\Annotation\Groups;
 use App\Repository\PostRepository;
@@ -28,39 +28,39 @@ use App\Controller\PostCommentController;
 #[Vich\Uploadable]
 #[ApiResource(
 operations: [
-    new Get(), 
+    new Get(),
+    new GetCollection(),
+    new Post(
+        security: "is_granted('ROLE_USER')",
+        controller: PostController::class),
     new Post(
         security: "is_granted('ROLE_ADMIN') or object.author == user", 
         uriTemplate: '/publications/{id}/image', 
         controller: PostImageController::class, 
         deserialize: false, 
-        openapiContext: 
-            ['summary' => 'Creates an image resource',
-                'requestBody' => 
-                ['description' => 'Uploads a media file',
-                    'content' => 
-                    ['multipart/form-data' => 
-                        ['schema' => 
-                            ['type' => 'object', 
-                                'properties' => 
-                                ['file' => 
-                                    ['type' => 'string', 
-                                        'format' => 'binary'
-                                    ]                                    
-                                ]                                
-                            ]                            
-                        ]                        
-                    ]                    
-                ]                
-            ]
+        openapi: new Model\Operation(
+            requestBody: new Model\RequestBody(
+                content: new \ArrayObject(
+                            ['multipart/form-data' => 
+                                ['schema' => 
+                                    ['type' => 'object', 
+                                        'properties' => 
+                                        ['file' => 
+                                            ['type' => 'string', 
+                                                'format' => 'binary'
+                                            ]                                    
+                                        ]                                
+                                    ]                            
+                                ]                        
+                            ])
+                        )
+                    )
         ),
-    new Put(security: "is_granted('ROLE_ADMIN') or object.author == user"),
+    new Put(
+        security: "is_granted('ROLE_ADMIN') or object.author == user"
+        ),
     new Patch(security: "is_granted('ROLE_ADMIN') or object.author == user"),
     new Delete(security: "is_granted('ROLE_ADMIN') or object.author == user"),
-    new GetCollection(),
-    new Post(
-        security: "is_granted('ROLE_USER')",
-        controller: PostController::class)
 ],
 normalizationContext: ['groups' => ['read', 'read:Publication']],
 denormalizationContext: ['groups' => ['post:image', 'post:create', 'post:update' ]], 

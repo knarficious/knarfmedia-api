@@ -36,9 +36,18 @@ operations: [
     new GetCollection(uriTemplate: '/users'),
     new Post(uriTemplate: 'users', controller: RegisterAction::class),    
 #new Post(processor: UserPasswordHasher::class, validationContext: ['groups' => ['Default', 'user:create']]),
-    new Put(uriTemplate: '/users/{id}', processor: UserPasswordHasher::class),
-    new Patch(uriTemplate: '/users/{id}',processor: UserPasswordHasher::class),
-    new Delete(uriTemplate: '/users/{id}'),
+    new Put(
+        security: "is_granted('ROLE_ADMIN') or object.author == user",
+        uriTemplate: '/users/{id}', processor: UserPasswordHasher::class
+        ),
+    new Patch(
+        security: "is_granted('ROLE_ADMIN') or object.author == user",
+        uriTemplate: '/users/{id}',processor: UserPasswordHasher::class
+        ),
+    new Delete(
+        security: "is_granted('ROLE_ADMIN') or object.author == user",
+        uriTemplate: '/users/{id}'
+        ),
 ],
 normalizationContext: ['groups' => ['user:read']],
 denormalizationContext: ['groups' => ['user:create', 'user:update']],
