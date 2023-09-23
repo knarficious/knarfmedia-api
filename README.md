@@ -1,4 +1,4 @@
-# KNARF MEDIA API
+# API
 
 The API will be here.
 
