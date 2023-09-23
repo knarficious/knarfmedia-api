@@ -14,6 +14,28 @@ lexik_jwt_authentication:
             enabled: false
             prefix: Bearer
             name: Authorization
-        cookie:
+        split_cookie:
             enabled: true
-            name: BEARER
+            cookies:
+                - jwt_hp
+                - jwt_s
+
+    set_cookies:
+        jwt_hp:
+            lifetime: null
+            samesite: strict
+            path: /
+            domain: null
+            httpOnly: false
+            split:
+                - header
+                - payload
+
+        jwt_s:
+            lifetime: 0
+            samesite: strict
+            path: /
+            domain: null
+            httpOnly: true
+            split:
+                - signature
