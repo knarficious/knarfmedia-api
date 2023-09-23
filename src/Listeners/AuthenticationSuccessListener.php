@@ -44,7 +44,7 @@ class AuthenticationSuccessListener
                 $this->cookieSecure
                 )
             );
-        $response->setStatusCode(Response::HTTP_CREATED);
+        $response->setStatusCode(Response::HTTP_OK);
 
         return $response;
     }

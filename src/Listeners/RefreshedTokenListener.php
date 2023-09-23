@@ -5,6 +5,7 @@ namespace App\Listeners;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationSuccessEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Cookie;
+use Symfony\Component\HttpFoundation\Response;
 
 class RefreshedTokenListener implements EventSubscriberInterface {    
 
@@ -24,6 +25,7 @@ class RefreshedTokenListener implements EventSubscriberInterface {
             new \DateTime())
                 ->add(new \DateInterval('PT' . $this->ttl . 'S')), '/', null, $this->cookieSecure));
         }
+        $response->setStatusCode(Response::HTTP_OK);
     }
     
     public static function getSubscribedEvents()
