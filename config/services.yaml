@@ -31,13 +31,13 @@ services:
         bind:
             $processor: '@api_platform.doctrine.orm.state.persist_processor'
             
-    App\Listeners\AuthenticationSuccessListener:
-        arguments: ['%lexik_jwt_authentication.token_ttl%']
-        tags:
-            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_authentication_success, method: onAuthenticationSuccess, priority: -2 }
-
-    App\Listeners\RefreshedTokenListener:
-        arguments: ['%gesdinet_jwt_refresh_token.ttl%']
+#    App\Listeners\AuthenticationSuccessListener:
+#        arguments: ['%lexik_jwt_authentication.token_ttl%']
+#        tags:
+#            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_authentication_success, method: onAuthenticationSuccess, priority: -2 }
+#
+#    App\Listeners\RefreshedTokenListener:
+#        arguments: ['%gesdinet_jwt_refresh_token.ttl%']
 
     App\Listeners\JWTNotFoundListener:
         tags:
