@@ -118,7 +118,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getUserIdentifier(): string
     {
-        return (string) $this->email;
+        return (string) $this->username;
     }
 
     /**
@@ -258,17 +258,6 @@ public function setIsVerified(bool $isVerified): self
 
     return $this;
 }
-
-public static function createFromPayload($username, array $payload)
-{
-    return new self(
-        $username,
-        $payload['roles'], // Added by default
-        $payload['email']  // Custom
-        );
-}
-public function getSalt()
-    {}
 
 
 

@@ -39,6 +39,10 @@ services:
 #    App\Listeners\RefreshedTokenListener:
 #        arguments: ['%gesdinet_jwt_refresh_token.ttl%']
 
+    App\Listeners\JWTCreatedListener:
+        tags:
+            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_jwt_created, method: onJWTCreated }
+    
     App\Listeners\JWTNotFoundListener:
         tags:
             - { name: kernel.event_listener, event: lexik_jwt_authentication.on_jwt_not_found, method: onJWTNotFound, priority: 0 }
