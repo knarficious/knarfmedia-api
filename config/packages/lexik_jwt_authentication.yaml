@@ -25,7 +25,7 @@ lexik_jwt_authentication:
             lifetime: null
             samesite: none
             path: /
-            domain: .herokuapp.com
+            domain: null
             httpOnly: false
             split:
                 - header
