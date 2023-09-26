@@ -25,7 +25,7 @@ lexik_jwt_authentication:
             lifetime: null
             samesite: lax
             path: /
-            domain: herokuapp.com
+            domain: null
             httpOnly: false
             split:
                 - header
@@ -35,7 +35,7 @@ lexik_jwt_authentication:
             lifetime: 0
             samesite: lax
             path: /
-            domain: herokuapp.com
+            domain: null
             httpOnly: true
             split:
                 - signature
