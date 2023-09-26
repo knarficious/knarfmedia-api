@@ -33,7 +33,7 @@ lexik_jwt_authentication:
 
         jwt_s:
             lifetime: 0
-            samesite: lax
+            samesite: none
             path: /
             domain: null
             httpOnly: true
