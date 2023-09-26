@@ -25,7 +25,7 @@ lexik_jwt_authentication:
             lifetime: null
             samesite: none
             path: /
-            domain: null
+            domain: knarfmedia-vue-client-a6d426879319.herokuapp.com
             httpOnly: false
             split:
                 - header
@@ -35,7 +35,7 @@ lexik_jwt_authentication:
             lifetime: 0
             samesite: none
             path: /
-            domain: null
+            domain: knarfmedia-vue-client-a6d426879319.herokuapp.com
             httpOnly: true
             split:
                 - signature

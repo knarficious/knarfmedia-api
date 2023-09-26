@@ -30,7 +30,7 @@ class EmailVerifier
             $verifyEmailRouteName,
             $user->getUserIdentifier(),
             $user->getEmail(),
-            ['email' => $user->getUserIdentifier()]
+            ['email' => $user->getEmail()]
         );
 
         $context = $email->getContext();

@@ -63,7 +63,7 @@ class Comment
     #[Groups(['comment:read'])]
     private $publishedAt;
     
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'comments')]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['comment:read'])]
     #[Link(toProperty: 'author')]
