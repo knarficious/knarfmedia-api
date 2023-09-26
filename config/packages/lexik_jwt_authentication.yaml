@@ -23,7 +23,7 @@ lexik_jwt_authentication:
     set_cookies:
         jwt_hp:
             lifetime: null
-            samesite: null
+            samesite: none
             path: /
             domain: .herokuapp.com
             httpOnly: false
