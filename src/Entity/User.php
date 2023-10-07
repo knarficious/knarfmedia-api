@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
@@ -23,11 +24,18 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Lexik\Bundle\JWTAuthenticationBundle\Security\User\JWTUserInterface;
 use App\State\UserProvider;
 use App\Controller\RegisterAction;
+use App\Controller\ProfileController;
 use App\Controller\VerifyEmailAction;
 
 #[ApiResource(
 operations: [
     new Get(uriTemplate: '/users/{id}'),
+    new Get(
+        name: 'profile',
+        uriTemplate: '/profile',
+        controller: ProfileController::class,
+        security: "is_granted('ROLE_USER')"
+        ),
 //     new Get(
 //         name: '_api_/verify',
 //         controller: VerifyEmailAction::class,
@@ -52,6 +60,14 @@ operations: [
 normalizationContext: ['groups' => ['user:read']],
 denormalizationContext: ['groups' => ['user:create', 'user:update']],
 )]
+// #[ApiResource(
+//     uriTemplate: 'publications/{publicationId}/users/{id}',
+//     uriVariables: [
+//         'publicationId' => new Link(fromClass: Publication::class,
+//             toProperty: 'posts')
+//     ],
+//     operations: [new Get()]
+//     )]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 #[UniqueEntity('email', 'username')]
@@ -75,13 +91,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
     
     #[Assert\NotBlank(groups: ['user:create'])]
-    #[Groups(['user:create', 'user:update'])]
+    #[Groups(['user:create'])]
     private ?string $plainPassword = null;    
 
     #[ORM\OneToMany(targetEntity: Publication::class, mappedBy: 'author', orphanRemoval: true)]
+    #[Groups(['user:read'])]
     private $posts;
     
     #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'author', orphanRemoval: true)]
+    #[Groups(['user:read'])]
     private $comments;
 
     #[ORM\Column(type: 'string', length: 50)]

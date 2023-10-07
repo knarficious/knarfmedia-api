@@ -16,3 +16,10 @@ api_platform:
              JWT:
                 name: Authorization
                 type: header
+    patch_formats:
+        multipart: ['multipart/form-data']
+        
+    eager_loading:
+        max_joins: 100
+        fetch_partial: true
+        force_eager: false

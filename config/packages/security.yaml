@@ -41,7 +41,6 @@ security:
         - { path: ^/contexts/*, roles: PUBLIC_ACCESS }
         - { path: ^/auth, roles: PUBLIC_ACCESS }
         - { path: ^/login, roles: PUBLIC_ACCESS }
-        - { path: ^/token/refresh, roles: PUBLIC_ACCESS }
 
 when@test:
     security:

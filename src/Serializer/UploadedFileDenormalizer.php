@@ -26,6 +26,9 @@ final class UploadedFileDenormalizer implements DenormalizerInterface
     
     public function getSupportedTypes(?string $format): array
     {
-        return [];
+        return [
+            "object"=> true,
+            "*" => true
+        ];
     }
 }

@@ -11,7 +11,7 @@ lexik_jwt_authentication:
 
     token_extractors:
         authorization_header:
-            enabled: false
+            enabled: true
             prefix: Bearer
             name: Authorization
         split_cookie:

@@ -22,8 +22,9 @@ use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use App\Controller\PostController;
-use App\Controller\PostImageController;
+use App\Controller\PublicationUpdateController;
 use App\Controller\PostCommentController;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 #[Vich\Uploadable]
 #[ApiResource(
@@ -32,37 +33,18 @@ operations: [
     new GetCollection(),
     new Post(
         security: "is_granted('ROLE_USER')",
-        controller: PostController::class),
-    new Post(
-        security: "is_granted('ROLE_ADMIN') or object.author == user", 
-        uriTemplate: '/publications/{id}/image', 
-        controller: PostImageController::class, 
-        deserialize: false, 
-        openapi: new Model\Operation(
-            requestBody: new Model\RequestBody(
-                content: new \ArrayObject(
-                            ['multipart/form-data' => 
-                                ['schema' => 
-                                    ['type' => 'object', 
-                                        'properties' => 
-                                        ['file' => 
-                                            ['type' => 'string', 
-                                                'format' => 'binary'
-                                            ]                                    
-                                        ]                                
-                                    ]                            
-                                ]                        
-                            ])
-                        )
-                    )
+        controller: PostController::class,
+        inputFormats: ['multipart' => ['multipart/form-data']]
         ),
     new Put(
-        security: "is_granted('ROLE_ADMIN') or object.author == user"
+        security: "is_granted('ROLE_ADMIN') or object.author == user",
+        inputFormats: ['multipart' => ['multipart/form-data']],
+        controller: PublicationUpdateController::class,
         ),
     new Patch(security: "is_granted('ROLE_ADMIN') or object.author == user"),
     new Delete(security: "is_granted('ROLE_ADMIN') or object.author == user"),
 ],
-normalizationContext: ['groups' => ['read', 'read:Publication']],
+normalizationContext: ['groups' => ['read', 'read:Publication', 'tag:read']],
 denormalizationContext: ['groups' => ['post:image', 'post:create', 'post:update' ]], 
 )]
 #[ORM\Entity(repositoryClass: PostRepository::class)]
@@ -75,7 +57,7 @@ class Publication
     private $id = null;
     
     #[ORM\Column(type: 'string', length: 180)]
-    #[Groups(['read', 'post:create', 'post:update'])]
+    #[Groups(['read', 'post:create', 'post:update', 'tag:read'])]
     private $title = null;
     
     #[ORM\Column(type: 'string', length: 255)]
@@ -104,24 +86,29 @@ class Publication
     
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'posts')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['read', 'post:update'])]
+    #[Groups(['read'])]
     public User $author;
     
     #[ORM\ManyToMany(targetEntity: Tag::class)]
     #[ORM\JoinTable(name: 'post_tag')]
-    #[Groups(['read', 'read:Publication', 'post:update', 'post:create'])]
-    private $tags;
+    #[Groups(['read', 'post:create', 'tag:read'])]
+    private Collection $tags;
     
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     #[Groups(['read', 'post:image'])]
-    private $filePath; 
+    private ?string $filePath; 
     
     #[Vich\UploadableField(
     mapping: 'media_object',
     fileNameProperty: 'filePath',
     mimeType: 'mimeType', 
     )]
+    #[Groups(['post:create', 'post:update'])]
     private ?File $file = null;
+    
+    #[ApiProperty(types: ['https://schema.org/contentUrl'])]
+    #[Groups(['read'])]
+    private ?string $contentUrl;
     
     public function __construct()
     {
@@ -263,10 +250,22 @@ class Publication
         return $this->mimeType;
     }
     
-    public function setMimeType(?string $mimeType)
+    public function setMimeType(?string $mimeType): self
     {
         $this->mimeType = $mimeType;
+        return $this;
     }
+
+    public function getContentUrl(): ?string
+    {
+        return $this->contentUrl;
+    }
+
+    public function setContentUrl(?string $contentUrl): self
+    {
+        $this->contentUrl = $contentUrl;
+    }
+
     
 
 }
