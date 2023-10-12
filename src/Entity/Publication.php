@@ -45,7 +45,7 @@ operations: [
     new Delete(security: "is_granted('ROLE_ADMIN') or object.author == user"),
 ],
 normalizationContext: ['groups' => ['read', 'read:Publication', 'tag:read']],
-denormalizationContext: ['groups' => ['post:image', 'post:create', 'post:update' ]], 
+denormalizationContext: ['groups' => ['post:image', 'post:create', 'post:update', 'tag:read' ]], 
 )]
 #[ORM\Entity(repositoryClass: PostRepository::class)]
 #[UniqueEntity("title")]
@@ -89,10 +89,10 @@ class Publication
     #[Groups(['read'])]
     public User $author;
     
-    #[ORM\ManyToMany(targetEntity: Tag::class)]
+    #[ORM\ManyToMany(targetEntity: Tag::class, mappedBy: 'publications')]
     #[ORM\JoinTable(name: 'post_tag')]
-    #[Groups(['read', 'post:create', 'tag:read'])]
-    private Collection $tags;
+    #[Groups(['read', 'post:create', 'tag:item:get'])]
+    public Collection $tags;
     
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     #[Groups(['read', 'post:image'])]
@@ -226,7 +226,8 @@ class Publication
     public function addTag(Tag $tag) : self
     {
         if (!$this->tags->contains($tag)) {
-            $this->tags[] = $tag;
+            $this->tags->add($tag);
+            $tag->addPublication($this);
         }
         return $this;
     }

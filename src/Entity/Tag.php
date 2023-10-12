@@ -19,6 +19,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
+use Doctrine\Common\Collections\ArrayCollection;
 
 #[ApiResource(
 operations: [
@@ -33,19 +34,20 @@ operations: [
     new Delete(security: "is_granted('ROLE_ADMIN')")
 ],
 normalizationContext: [
-    'groups' => ['tag:read'],
+    'groups' => ['tag:read', 'read:Publication'],
 ],
 denormalizationContext: [
     'groups' => ['tag:write'],
 ],
 )]
 #[ORM\Entity(repositoryClass: TagRepository::class)]
-#[UniqueEntity("name")]
+#[UniqueEntity(fields: ['name'], message: 'Il y a déjà un tag de ce nom')]
 class Tag
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
+    #[Groups(['tag:read', 'post:create'])]
     private $id;
     
     #[ORM\Column(type: 'string', length: 25)]
@@ -54,11 +56,14 @@ class Tag
     #[Assert\NotBlank]
     private $name;
     
-    #[ORM\ManyToMany(targetEntity: Publication::class)]    
-    #[ORM\JoinTable(name: 'post_tag')]
+    #[ORM\ManyToMany(targetEntity: Publication::class, inversedBy: 'tags')]
     #[Groups(['tag:item:get'])]
     #[Assert\Valid]
-    private Collection $publications;
+    protected Collection $publications;
+    
+    public function __construct(){
+        $this->publications = new ArrayCollection();
+    }
     
     public function getId() : ?int
     {
@@ -76,5 +81,13 @@ class Tag
     
     public function getPublications(): Collection {
         return $this->publications;
+    }
+    
+    public function addPublication(Publication $publication) {
+        $this->publications[] = $publication;
+    }
+    
+    public function __toString() {
+        return $this->name;
     }
 }

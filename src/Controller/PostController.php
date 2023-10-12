@@ -6,12 +6,13 @@ use App\Entity\Publication;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Attribute\AsController;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Doctrine\ORM\EntityManagerInterface;
+use App\Entity\Tag;
 
 #[AsController]
 final class PostController extends AbstractController
 {
-    public function __invoke(Request $request): Publication
+    public function __invoke(Request $request, EntityManagerInterface $em): Publication
     {
 //         $data = json_decode($request->getContent(), true);
         
@@ -43,13 +44,20 @@ final class PostController extends AbstractController
         $post->setSummary($request->attributes->get('data')->getSummary());
         $post->setContent($request->attributes->get('data')->getContent());
         $tags = $request->attributes->get('data')->getTags();
-        if (count($tags) !== 0) {
             
             foreach ($tags as $tag){
+                $tagReference = 'App\Entity\Tag';
+                $tagClass = $em->getReference($tagReference, $tag->getId());
                 
-                $post->addTag($tag);
-            };
-        }
+                if ($em->contains($tagClass)) {
+                    $post->addTag($tagClass);
+                }
+               
+
+               }             
+                
+            
+        
         
         return $post;
     }

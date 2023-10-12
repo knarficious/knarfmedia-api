@@ -36,7 +36,7 @@ final class PostImageNormalizer implements NormalizerInterface, NormalizerAwareI
     {        
         $context[self::ALREADY_CALLED] = true;
         
-        $object->contentUrl($this->storage->resolveUri($object, 'file'));
+        $object->getFilePath($this->storage->resolveUri($object, 'file'));
         
         return $this->normalizer->normalize($object, $format, $context);
     }
