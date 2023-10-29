@@ -22,8 +22,18 @@ use App\Entity\Publication;
 
 operations: [
     new Get(),
-    new GetCollection(),
-    new Post(security: "is_granted('ROLE_USER')"),    
+    new GetCollection(
+        uriTemplate: '/users/{userId}/comments',
+        uriVariables: [
+            'userId' => new Link(fromClass: User::class, toProperty: 'author')
+        ]
+        ),
+    new GetCollection(
+        uriTemplate: '/publications/{publicationId}/comments',
+        uriVariables: [
+            'publicationId' => new Link(fromClass: Publication::class, toProperty: 'post')
+        ]
+        ), 
     new Post(
         security: "is_granted('ROLE_USER')",
         controller: PostCommentController::class,
@@ -31,7 +41,7 @@ operations: [
         uriVariables: [
             'id' => new Link(
                 fromClass: Publication::class,
-                fromProperty: 'comments')
+                toProperty: 'post')
         ]
         ),
     new Put(security: "is_granted('ROLE_ADMIN') or object.author == user"),
@@ -56,16 +66,16 @@ class Comment
     public Publication $post;
     
     #[ORM\Column(type: 'text')]
-    #[Groups(['write', 'comment:read'])]
+    #[Groups(['write', 'comment:read', 'read:Publication'])]
     private $content;
     
     #[ORM\Column(type: 'datetime_immutable')]
-    #[Groups(['comment:read'])]
+    #[Groups(['comment:read', 'read:Publication'])]
     private $publishedAt;
     
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'comments')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['comment:read'])]
+    #[Groups(['comment:read', 'read:Publication'])]
     #[Link(toProperty: 'author')]
     public User $author;
     

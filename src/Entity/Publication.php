@@ -13,7 +13,7 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\OpenApi\Model;
 use ApiPlatform\Metadata\Link;
 use Symfony\Component\Serializer\Annotation\Groups;
-use App\Repository\PostRepository;
+use App\Repository\PublicationRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -28,9 +28,17 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 #[Vich\Uploadable]
 #[ApiResource(
+mercure: true,
+formats: [ 'jsonld', 'multipart' => ['multipart/form-data']],
 operations: [
     new Get(),
     new GetCollection(),
+    new GetCollection(
+        uriTemplate: '/users/{userId}/publications',
+        uriVariables: [
+            'userId' => new Link(fromClass: User::class, toProperty: 'author')
+        ]
+        ), 
     new Post(
         security: "is_granted('ROLE_USER')",
         controller: PostController::class,
@@ -38,22 +46,29 @@ operations: [
         ),
     new Put(
         security: "is_granted('ROLE_ADMIN') or object.author == user",
-        inputFormats: ['multipart' => ['multipart/form-data']],
-        controller: PublicationUpdateController::class,
+        inputFormats: ['json' => ['application/ld+json']],
+        //controller: PublicationUpdateController::class,
+        //options: ['methods' => 'POST']
         ),
-    new Patch(security: "is_granted('ROLE_ADMIN') or object.author == user"),
+    new Patch(
+        security: "is_granted('ROLE_ADMIN') or object.author == user",
+        inputFormats: ['json' => 'application/merge-patch+json'],
+        //controller: PublicationUpdateController::class,
+        
+        ),
     new Delete(security: "is_granted('ROLE_ADMIN') or object.author == user"),
 ],
-normalizationContext: ['groups' => ['read', 'read:Publication', 'tag:read']],
-denormalizationContext: ['groups' => ['post:image', 'post:create', 'post:update', 'tag:read' ]], 
+normalizationContext: ['groups' => ['read', 'read:Publication', 'tag:read', 'post:update']],
+denormalizationContext: ['groups' => ['post:image', 'post:create', 'tag:read' ]], 
 )]
-#[ORM\Entity(repositoryClass: PostRepository::class)]
+#[ORM\Entity(repositoryClass: PublicationRepository::class)]
 #[UniqueEntity("title")]
 class Publication
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
+    #[Groups(['read'])]
     private $id = null;
     
     #[ORM\Column(type: 'string', length: 180)]
@@ -82,16 +97,18 @@ class Publication
     
     #[ORM\OneToMany(mappedBy: 'post', targetEntity: Comment::class, orphanRemoval: true)]
     #[Groups(['read'])]
+    #[Link(fromProperty: 'comments')]
     public $comments = [];
     
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'posts')]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['read'])]
+    #[Link(toProperty: 'author')]
     public User $author;
     
     #[ORM\ManyToMany(targetEntity: Tag::class, mappedBy: 'publications')]
     #[ORM\JoinTable(name: 'post_tag')]
-    #[Groups(['read', 'post:create', 'tag:item:get'])]
+    #[Groups(['read', 'post:create', 'post:update', 'tag:item:get'])]
     public Collection $tags;
     
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
@@ -103,12 +120,10 @@ class Publication
     fileNameProperty: 'filePath',
     mimeType: 'mimeType', 
     )]
-    #[Groups(['post:create', 'post:update'])]
+    #[Groups(['post:create'])]
     private ?File $file = null;
     
-    #[ApiProperty(types: ['https://schema.org/contentUrl'])]
-    #[Groups(['read'])]
-    private ?string $contentUrl;
+
     
     public function __construct()
     {
@@ -256,16 +271,12 @@ class Publication
         $this->mimeType = $mimeType;
         return $this;
     }
-
-    public function getContentUrl(): ?string
-    {
-        return $this->contentUrl;
+    
+    public function __toString() {
+        return $this->title;
     }
 
-    public function setContentUrl(?string $contentUrl): self
-    {
-        $this->contentUrl = $contentUrl;
-    }
+
 
     
 

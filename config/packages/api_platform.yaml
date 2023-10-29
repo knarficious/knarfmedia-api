@@ -17,7 +17,8 @@ api_platform:
                 name: Authorization
                 type: header
     patch_formats:
-        multipart: ['multipart/form-data']
+        multipart: ['multipart/form-data']        
+        json:     ['application/merge-patch+json']
         
     eager_loading:
         max_joins: 100

@@ -22,6 +22,7 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Doctrine\Common\Collections\ArrayCollection;
 
 #[ApiResource(
+mercure: true,
 operations: [
     new Get(
         normalizationContext: [
@@ -84,7 +85,12 @@ class Tag
     }
     
     public function addPublication(Publication $publication) {
-        $this->publications[] = $publication;
+        
+        if (!$this->publications->contains($publication)) {
+            $this->publications[] = $publication;
+            $publication->addTag($this);
+        }
+        
     }
     
     public function __toString() {
