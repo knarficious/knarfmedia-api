@@ -22,7 +22,6 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Doctrine\Common\Collections\ArrayCollection;
 
 #[ApiResource(
-mercure: true,
 operations: [
     new Get(
         normalizationContext: [
