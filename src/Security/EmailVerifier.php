@@ -26,8 +26,7 @@ class EmailVerifier
 
     public function sendEmailConfirmation(string $verifyEmailRouteName, UserInterface $user, TemplatedEmail $email): void
     {
-        $user = new User();
-        $signatureComponents = $this->verifyEmailHelper->generateSignature(
+       $signatureComponents = $this->verifyEmailHelper->generateSignature(
             $verifyEmailRouteName,
             $user->getUserIdentifier(),
             $user->getEmail(),
