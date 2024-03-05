@@ -35,7 +35,15 @@ final class VerifyEmailAction extends AbstractController
     {
         $userId = $request->query->get('userId');
 
-        $user = $userRepository->findOneBy(['username' => $userId]);        
+        if (null === $userId) {
+            return $this->redirectToRoute('api_doc');
+        }
+
+        $user = $userRepository->find($userId);
+
+            if (null === $user) {
+                return $this->redirectToRoute('api_doc');
+            }
 
         // validate email confirmation link, sets User::isVerified=true and persists
         try {
