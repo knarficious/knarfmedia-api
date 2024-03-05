@@ -45,15 +45,15 @@ operations: [
     new Post(uriTemplate: 'users', controller: RegisterAction::class),    
 #new Post(processor: UserPasswordHasher::class, validationContext: ['groups' => ['Default', 'user:create']]),
     new Put(
-        security: "is_granted('ROLE_ADMIN') or object.author == user",
+        security: "is_granted('ROLE_ADMIN') or object == user",
         uriTemplate: '/users/{id}', processor: UserPasswordHasher::class
         ),
     new Patch(
-        security: "is_granted('ROLE_ADMIN') or object.author == user",
+        security: "is_granted('ROLE_ADMIN') or object == user",
         uriTemplate: '/users/{id}',processor: UserPasswordHasher::class
         ),
     new Delete(
-        security: "is_granted('ROLE_ADMIN') or object.author == user",
+        security: "is_granted('ROLE_ADMIN') or object == user",
         uriTemplate: '/users/{id}'
         ),
 ],
