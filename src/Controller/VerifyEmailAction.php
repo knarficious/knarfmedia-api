@@ -39,7 +39,7 @@ final class VerifyEmailAction extends AbstractController
             return $this->redirectToRoute('api_doc');
         }
 
-        $user = $userRepository->find($userId);
+        $user = $userRepository->findOneBy(['username' => $userId]);
 
             if (null === $user) {
                 return $this->redirectToRoute('api_doc');
