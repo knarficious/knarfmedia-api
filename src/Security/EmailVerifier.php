@@ -48,13 +48,12 @@ class EmailVerifier
      */
     public function handleEmailConfirmation(Request $request, User $user): void
     {              
-        $this->verifyEmailHelper->validateEmailConfirmation($request->getUri(), $user->getUserIdentifier(), $user->getUserIdentifier());
+        $this->verifyEmailHelper->validateEmailConfirmation($request->getUri(), $user->getUserIdentifier(), $user->getEmail());
                
         $user->setIsVerified(true);
         
         $this->entityManager->persist($user);
-        $this->entityManager->flush();
-        
+        $this->entityManager->flush();        
         
 
     }
