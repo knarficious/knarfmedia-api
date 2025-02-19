@@ -28,7 +28,7 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 #[Vich\Uploadable]
 #[ApiResource(
-mercure: true,
+mercure: false,
 formats: [ 'jsonld', 'multipart' => ['multipart/form-data']],
 operations: [
     new Get(),
