@@ -39,6 +39,10 @@ services:
 #    App\Listeners\RefreshedTokenListener:
 #        arguments: ['%gesdinet_jwt_refresh_token.ttl%']
 
+    App\Listeners\UserEventListener:
+        tags:
+            - { name: doctrine.event_listener, event: postPersist }
+
     App\Listeners\JWTCreatedListener:
         tags:
             - { name: kernel.event_listener, event: lexik_jwt_authentication.on_jwt_created, method: onJWTCreated }
