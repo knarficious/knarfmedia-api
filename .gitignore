@@ -25,3 +25,4 @@
 /config/jwt/*.pem
 ###< lexik/jwt-authentication-bundle ###
 /.buildpath
+/heroku_data.txt

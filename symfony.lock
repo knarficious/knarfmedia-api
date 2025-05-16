@@ -15,6 +15,18 @@
     "api-platform/schema-generator": {
         "version": "v4.0.0"
     },
+    "async-aws/async-aws-bundle": {
+        "version": "1.14",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "main",
+            "version": "1.0",
+            "ref": "36bc5854429183d4ba6980c916f9e9284deb3a16"
+        },
+        "files": [
+            "config/packages/async_aws.yaml"
+        ]
+    },
     "composer/pcre": {
         "version": "1.0.0"
     },
@@ -125,6 +137,19 @@
     },
     "lcobucci/jwt": {
         "version": "4.1.5"
+    },
+    "league/flysystem-bundle": {
+        "version": "3.4",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "1.0",
+            "ref": "913dc3d7a5a1af0d2b044c5ac3a16e2f851d7380"
+        },
+        "files": [
+            "config/packages/flysystem.yaml",
+            "var/storage/.gitignore"
+        ]
     },
     "league/html-to-markdown": {
         "version": "5.0.2"

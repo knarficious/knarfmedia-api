@@ -116,15 +116,13 @@ class Publication
     private ?string $filePath; 
     
     #[Vich\UploadableField(
-    mapping: 'media_object',
+    mapping: 'uploads',
     fileNameProperty: 'filePath',
     mimeType: 'mimeType', 
     )]
     #[Groups(['post:create'])]
-    private ?File $file = null;
-    
-
-    
+    private ?File $file = null;    
+  
     public function __construct()
     {
         $this->publishedAt = new \DateTime("now");
@@ -163,6 +161,7 @@ class Publication
         $this->content = $content;
         return $this;
     }
+
     public function getPublishedAt() : ?\DateTimeInterface
     {
         return $this->publishedAt;
