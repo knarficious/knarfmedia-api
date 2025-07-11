@@ -115,6 +115,22 @@ class Publication
     #[Groups(['read', 'post:image'])]
     private ?string $filePath; 
     
+    #[Assert\File(
+        maxSize: '10M',
+        maxSizeMessage: 'Le fichier est trop volumineux: { size }. La limite est { limit }',
+        mimeTypes: [
+            'image/jpeg',
+            'image/gif',
+            'image/svg+xml',
+            'audio/mpeg',
+            'audio/ogg',
+            'video/mp4',
+            'video/avi',
+            'video/x-msvideo',
+            'video/webm'
+        ],
+        mimeTypesMessage: 'Ce type de fichier n\'est pas autorisé: les types autorisés sont { types }'
+        )]
     #[Vich\UploadableField(
     mapping: 'uploads',
     fileNameProperty: 'filePath',
