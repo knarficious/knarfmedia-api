@@ -90,7 +90,8 @@
 			"allow-contrib" : false,
 			"require" : "6.4.*",
 			"docker" : false
-		},
+		}
+	},
 	"scripts" : {
         "auto-scripts": {
             "cache:clear": "symfony-cmd",
