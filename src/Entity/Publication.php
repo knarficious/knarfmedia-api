@@ -76,7 +76,7 @@ class Publication
     private $title = null;
     
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read', 'post:create', 'post:update'])]
+    #[Groups(['read', 'post:create', 'post:update', 'tag:read'])]
     private $summary = null;
     
     #[ORM\Column(type: 'text')]
@@ -86,13 +86,13 @@ class Publication
     #[ApiProperty(iris: ['https://schema.org/dateCreated'])]
     #[ORM\Column(type: 'date')]
     #[Assert\Type(\DateTimeInterface::class)]
-    #[Groups(['read'])]
+    #[Groups(['read', 'tag:read'])]
     private ?\DateTimeInterface $publishedAt = null;
     
     #[ApiProperty(iris: ['https://schema.org/dateModified'])]
     #[ORM\Column(type: 'date')]
     #[Assert\Type(\DateTimeInterface::class)]
-    #[Groups(['read'])]
+    #[Groups(['read', 'tag:read'])]
     private ?\DateTimeInterface $updatedAt = null;
     
     #[ORM\OneToMany(mappedBy: 'post', targetEntity: Comment::class, orphanRemoval: true)]
@@ -102,7 +102,7 @@ class Publication
     
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'posts')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['read'])]
+    #[Groups(['read', 'tag:read'])]
     #[Link(toProperty: 'author')]
     public User $author;
     
