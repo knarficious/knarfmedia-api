@@ -47,8 +47,8 @@ operations: [
     new Put(
         security: "is_granted('ROLE_ADMIN') or object.author == user",
         inputFormats: ['json' => ['application/ld+json']],
-        //controller: PublicationUpdateController::class,
-        //options: ['methods' => 'POST']
+        controller: PublicationUpdateController::class,
+        options: ['methods' => 'POST']
         ),
     new Patch(
         security: "is_granted('ROLE_ADMIN') or object.author == user",
