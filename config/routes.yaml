@@ -3,6 +3,9 @@ auth:
     methods: ['POST']
 api_token_invalidate:
     path: /token/invalidate
+refresh_token:
+    path: /token/refresh
+    methods: ['POST']
 app_verify_email:
     path: /verify
     methods: ['GET']

@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Delete;
@@ -9,14 +11,18 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\ApiProperty;
-use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\Link;
+use ApiPlatform\State\CreateProvider;
 use App\Repository\CommentRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Serializer\Attribute\MaxDepth;
+use App\State\CommentaireProcessor; 
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Validator\Constraints as Assert;
 use App\Controller\PostCommentController;
-use App\Entity\Publication;
 
 #[ApiResource(
 
@@ -31,65 +37,88 @@ operations: [
     new GetCollection(
         uriTemplate: '/publications/{publicationId}/comments',
         uriVariables: [
-            'publicationId' => new Link(fromClass: Publication::class, toProperty: 'post')
-        ]
+            'publicationId' => new Link(fromClass: Publication::class, toProperty: 'publication')
+        ],
         ), 
     new Post(
-        security: "is_granted('ROLE_USER')",
-        controller: PostCommentController::class,
-        uriTemplate: '/publications/{id}/commenter',
+        uriTemplate: '/publications/{publicationId}/commenter',
         uriVariables: [
-            'id' => new Link(
-                fromClass: Publication::class,
-                toProperty: 'post')
-        ]
+            'publicationId' => new Link(fromClass: Publication::class, toProperty: 'publication')
+        ],
+        security: "is_granted('ROLE_USER')",
+        provider: CreateProvider::class,
+        processor: CommentaireProcessor::class
+        //controller: PostCommentController::class
         ),
-    new Put(security: "is_granted('ROLE_ADMIN') or object.author == user"),
-    new Patch(security: "is_granted('ROLE_ADMIN') or object.author == user"),
-    new Delete(security: "is_granted('ROLE_ADMIN') or object.author == user")
-], 
-denormalizationContext: ['groups' => ['write']], 
+    new Put(security: "object.getAuthor() == user"),
+    new Patch(security: "object.getAuthor() == user"),
+    new Delete(security: "is_granted('ROLE_ADMIN') or object.getAuthor() == user")
+],
+denormalizationContext: ['groups' => ['comment:write']], 
 mercure: true, 
-normalizationContext: ['groups' => ['comment:read']])]
+normalizationContext: ['groups' => ['comment:read']]
+)]
+
+#[ApiFilter(SearchFilter::class, properties: [
+    'post' => 'exact',
+    'parent' => 'exact'
+])]
 #[ORM\Entity(repositoryClass: CommentRepository::class)]
 class Comment
 {
+    #[ApiProperty(identifier: true)]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    private $id;
+    #[Groups(['comment:read'])]
+    private ?int $id = null;
     
+    #[ApiProperty]
     #[ORM\ManyToOne(targetEntity: Publication::class, inversedBy: 'comments')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['comment:read'])]
-    #[Link(toProperty: 'post')]
-    public Publication $post;
+    #[Groups(['comment:read', 'comment:write', 'publication:update  '])]
+    private ?Publication $publication = null;    
+    
+    #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'children')]
+    #[Groups(['comment:write', 'comment:read'])]
+    #[ApiProperty(readableLink: false, writableLink: false)]
+    private ?self $parent = null;    
+    
+    #[ORM\OneToMany(mappedBy: 'parent', targetEntity: self::class)]
+    #[MaxDepth(2)]
+    #[Groups(['comment:write', 'comment:read'])]
+    private Collection $children;
     
     #[ORM\Column(type: 'text')]
-    #[Groups(['write', 'comment:read', 'read:Publication'])]
-    private $content;
+    #[Groups(['comment:write', 'comment:read', 'publication:read'])]
+    private string $content;
     
     #[ORM\Column(type: 'datetime_immutable')]
-    #[Groups(['comment:read', 'read:Publication'])]
-    private $publishedAt;
+    #[Groups(['comment:read', 'publication:read'])]
+    private \DateTimeImmutable $publishedAt;
     
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'comments')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['comment:read', 'read:Publication'])]
+    #[Groups(['comment:read', 'publication:read'])]
     #[Link(toProperty: 'author')]
-    public User $author;
+    private User $author;
+    
+    public function __construct() {
+        $this->children = new ArrayCollection();
+        $this->publishedAt = new \DateTimeImmutable();
+    }
     
     public function getId() : ?int
     {
         return $this->id;
     }
-    public function getPost() : ?Publication
+    public function getPublication() : ?Publication
     {
-        return $this->post;
+        return $this->publication;
     }
-    public function setPost(?Publication $post) : self
+    public function setPublication(?Publication $publication) : self
     {
-        $this->post = $post;
+        $this->publication = $publication;
         return $this;
     }
     public function getContent() : ?string
@@ -119,4 +148,21 @@ class Comment
         $this->author = $author;
         return $this;
     }
+    /**
+     * @return \App\Entity\Comment
+     */
+    public function getParent(): ?Comment
+    {
+        return $this->parent;
+    }
+
+    /**
+     * @param \App\Entity\Comment $parent
+     */
+    public function setParent($parent): self
+    {
+        $this->parent = $parent;
+        return $this;
+    }
+
 }

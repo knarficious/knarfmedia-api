@@ -34,7 +34,7 @@ operations: [
     new Delete(security: "is_granted('ROLE_ADMIN')")
 ],
 normalizationContext: [
-    'groups' => ['tag:read', 'read:Publication'],
+    'groups' => ['tag:read', 'publication:read'],
 ],
 denormalizationContext: [
     'groups' => ['tag:write'],
@@ -47,11 +47,11 @@ class Tag
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(['tag:read', 'post:create'])]
+    #[Groups(['tag:read', 'publication:create'])]
     private $id;
     
     #[ORM\Column(type: 'string', length: 25)]
-    #[Groups(['tag:read', 'tag:write', 'read:Publication', 'post:create'])]
+    #[Groups(['tag:read', 'tag:write', 'publication:read', 'publication:create'])]
     #[ApiFilter(SearchFilter::class, strategy: 'partial')]    
     #[Assert\NotBlank]
     private $name;

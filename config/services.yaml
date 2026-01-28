@@ -25,11 +25,8 @@ services:
     
     App\Controller\:
         resource: '../src/Controller/'
-        tags: ['controller.service_arguments']
-    
-    App\State\UserPasswordHasher:
-        bind:
-            $processor: '@api_platform.doctrine.orm.state.persist_processor'
+        tags: ['controller.service_arguments']  
+
             
 #    App\Listeners\AuthenticationSuccessListener:
 #        arguments: ['%lexik_jwt_authentication.token_ttl%']
@@ -53,6 +50,17 @@ services:
         tags:
             - { name: kernel.event_listener, event: lexik_jwt_authentication.on_jwt_created, method: onJWTCreated }
     
-    App\Listeners\JWTNotFoundListener:
+#    App\Listeners\JWTNotFoundListener:
+#        tags:
+#            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_jwt_not_found, method: onJWTNotFound, priority: 0 }
+
+    App\Listeners\AddRefreshTokenOnSuccessListener:
+        arguments:
+            $ttl: 2592000
         tags:
-            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_jwt_not_found, method: onJWTNotFound, priority: 0 }
+            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_authentication_success, method: onAuthenticationSuccessResponse }
+            
+    App\State\CommentaireProcessor:
+        arguments:
+            $persistProcessor: "@api_platform.doctrine.orm.state.persist_processor"
+        tags: ["api_platform.state_processor"]

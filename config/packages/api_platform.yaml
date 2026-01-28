@@ -24,3 +24,5 @@ api_platform:
         max_joins: 100
         fetch_partial: true
         force_eager: false
+
+    use_symfony_listeners: true

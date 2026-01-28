@@ -40,6 +40,7 @@ security:
         - { path: ^/, roles: PUBLIC_ACCESS }
         - { path: ^/contexts/*, roles: PUBLIC_ACCESS }
         - { path: ^/auth, roles: PUBLIC_ACCESS }
+        - { path: ^/token/refresh, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/login, roles: PUBLIC_ACCESS }
 
 when@test:

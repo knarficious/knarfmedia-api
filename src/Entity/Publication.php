@@ -23,8 +23,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use App\Controller\PostController;
 use App\Controller\PublicationUpdateController;
-use App\Controller\PostCommentController;
-use Symfony\Component\Serializer\Annotation\MaxDepth;
+use App\State\PublicationProcessor;
 
 #[Vich\Uploadable]
 #[ApiResource(
@@ -40,6 +39,7 @@ operations: [
         ]
         ), 
     new Post(
+        //processor: PublicationProcessor::class,
         security: "is_granted('ROLE_USER')",
         controller: PostController::class,
         inputFormats: ['multipart' => ['multipart/form-data']]
@@ -58,61 +58,62 @@ operations: [
         ),
     new Delete(security: "is_granted('ROLE_ADMIN') or object.author == user"),
 ],
-normalizationContext: ['groups' => ['read', 'read:Publication', 'tag:read', 'post:update']],
-denormalizationContext: ['groups' => ['post:image', 'post:create', 'tag:read' ]], 
+normalizationContext: ['groups' => ['publication:read', 'tag:read']],
+denormalizationContext: ['groups' => ['publication:image', 'publication:create', 'publication:update' ]], 
 )]
 #[ORM\Entity(repositoryClass: PublicationRepository::class)]
 #[UniqueEntity("title")]
 class Publication
 {
+    #[ApiProperty(identifier: true)]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(['read'])]
-    private $id = null;
+    #[Groups(['publication:read', 'comment:write'])]
+    private $id;
     
     #[ORM\Column(type: 'string', length: 180)]
-    #[Groups(['read', 'post:create', 'post:update', 'tag:read'])]
+    #[Groups(['publication:read', 'publication:create', 'publication:update', 'tag:read'])]
     private $title = null;
     
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read', 'post:create', 'post:update', 'tag:read'])]
+    #[Groups(['publication:read', 'publication:create', 'publication:update'])]
     private $summary = null;
     
     #[ORM\Column(type: 'text')]
-    #[Groups(['read', 'post:create', 'post:update'])]
+    #[Groups(['publication:read', 'publication::create', 'publication:update'])]
     private $content = null;
     
     #[ApiProperty(iris: ['https://schema.org/dateCreated'])]
     #[ORM\Column(type: 'date')]
     #[Assert\Type(\DateTimeInterface::class)]
-    #[Groups(['read', 'tag:read'])]
+    #[Groups(['publication:read', 'tag:read'])]
     private ?\DateTimeInterface $publishedAt = null;
     
     #[ApiProperty(iris: ['https://schema.org/dateModified'])]
     #[ORM\Column(type: 'date')]
     #[Assert\Type(\DateTimeInterface::class)]
-    #[Groups(['read', 'tag:read'])]
+    #[Groups(['publication:read', 'tag:read'])]
     private ?\DateTimeInterface $updatedAt = null;
     
-    #[ORM\OneToMany(mappedBy: 'post', targetEntity: Comment::class, orphanRemoval: true)]
-    #[Groups(['read'])]
-    #[Link(fromProperty: 'comments')]
-    public $comments = [];
+    #[ORM\OneToMany(mappedBy: 'publication', targetEntity: Comment::class,)]
+    #[Groups(['publication:read', 'publication:write'])]
+    private Collection $comments;
     
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'posts')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['read', 'tag:read'])]
+    #[Groups(['publication:read'])]
     #[Link(toProperty: 'author')]
-    public User $author;
+    private ?User $author;
     
     #[ORM\ManyToMany(targetEntity: Tag::class, mappedBy: 'publications')]
     #[ORM\JoinTable(name: 'post_tag')]
-    #[Groups(['read', 'post:create', 'post:update', 'tag:item:get'])]
-    public Collection $tags;
+    #[Groups(['publication:read', 'publication:create', 'publication:update', 'tag:item:get'])]
+    #[Link(toProperty: 'post')]
+    private Collection $tags;
     
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    #[Groups(['read', 'post:image'])]
+    #[Groups(['publication:read', 'publication:image'])]
     private ?string $filePath; 
     
     #[Assert\File(
@@ -136,7 +137,7 @@ class Publication
     fileNameProperty: 'filePath',
     mimeType: 'mimeType', 
     )]
-    #[Groups(['post:create'])]
+    #[Groups(['publication:create'])]
     private ?File $file = null;    
   
     public function __construct()
@@ -215,28 +216,25 @@ class Publication
     /**
      * @return Collection|Comment[]
      */
-    public function getComments() : Collection
+    public function getComments()
     {
-        return $this->comments;
+        return $this->comments->getValues();
     }
     public function addComment(Comment $comment) : self
     {
         if (!$this->comments->contains($comment)) {
-            $this->comments[] = $comment;
-            $comment->setPost($this);
+            $this->comments->add($comment);
+            $comment->setPublication($this);
         }
+        
         return $this;
+
     }
     public function removeComment(Comment $comment) : self
     {
-        if ($this->comments->removeElement($comment)) {
-            // set the owning side to null (unless already changed)
-            if ($comment->getPost() === $this) {
-                $comment->setPost(null);
-            }
-        }
-        return $this;
+        $this->comments->removeElement($comment);
     }
+        
     public function getAuthor() : ?User
     {
         return $this->author;
