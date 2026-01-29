@@ -28,6 +28,7 @@ use App\Controller\PostCommentController;
 
 operations: [
     new Get(),
+    new GetCollection(),
     new GetCollection(
         uriTemplate: '/users/{userId}/comments',
         uriVariables: [
@@ -76,7 +77,7 @@ class Comment
     #[ApiProperty]
     #[ORM\ManyToOne(targetEntity: Publication::class, inversedBy: 'comments')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['comment:read', 'comment:write', 'publication:update  '])]
+    #[Groups(['comment:read', 'publication:update  '])]
     private ?Publication $publication = null;    
     
     #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'children')]
