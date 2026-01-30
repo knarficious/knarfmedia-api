@@ -24,5 +24,8 @@ api_platform:
         max_joins: 100
         fetch_partial: true
         force_eager: false
+        
+    serializer:
+        hydra_prefix: true
 
     use_symfony_listeners: true
