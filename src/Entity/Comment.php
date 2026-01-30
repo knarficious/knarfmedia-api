@@ -81,13 +81,13 @@ class Comment
     private ?Publication $publication = null;    
     
     #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'children')]
-    #[Groups(['comment:write', 'comment:read'])]
+    #[Groups(['comment:write', 'comment:read', 'publication:read'])]
     #[ApiProperty(readableLink: false, writableLink: false)]
     private ?self $parent = null;    
     
     #[ORM\OneToMany(mappedBy: 'parent', targetEntity: self::class)]
     #[MaxDepth(2)]
-    #[Groups(['comment:write', 'comment:read'])]
+    #[Groups(['comment:write', 'comment:read', 'publication:read'])]
     private Collection $children;
     
     #[ORM\Column(type: 'text')]
@@ -164,6 +164,11 @@ class Comment
     {
         $this->parent = $parent;
         return $this;
+    }
+    
+    public function getChildren(): Collection 
+    {
+       return $this->children ;
     }
 
 }
