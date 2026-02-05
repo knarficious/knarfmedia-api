@@ -40,12 +40,29 @@ services:
         tags:
             - { name: doctrine.event_listener, event: postPersist }
 
+    App\Service\S3Service:
+        tags: ['container.service_locatorAware']
+                    # Les env vars sont autowirés via #[Autowire('%env(...)%')]
+                    # Logger est optionnel (Symfony le fournit automatiquement)
+
+    # Force la config AsyncAws si bundle pas utilisé
+    AsyncAws\S3\S3Client:
+        arguments:
+            $configuration:
+                region: '%env(AWS_REGION)%'
+                accessKeyId: '%env(AWS_ACCESS_KEY_ID)%'
+                accessKeySecret: '%env(AWS_SECRET_ACCESS_KEY)%'
+            
     App\EventSubscriber\S3Subscriber:
         class: App\EventSubscriber\S3Subscriber
         arguments:
             $projectDir: '%kernel.project_dir%'
             $bucket: string
 
+    App\Mime\NullMimeTypeGuesser:
+        tags:
+            - { name: mime.mime_type_guesser, priority: 100 }
+            
     App\Listeners\JWTCreatedListener:
         tags:
             - { name: kernel.event_listener, event: lexik_jwt_authentication.on_jwt_created, method: onJWTCreated }

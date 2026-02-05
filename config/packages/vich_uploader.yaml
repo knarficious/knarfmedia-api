@@ -7,8 +7,10 @@ vich_uploader:
         type: attribute
     mappings:
         uploads:
-            uri_prefix: 'https://%env(AWS_S3_BUCKET)%.s3.%env(AWS_S3_REGION)%.amazonaws.com/uploads'
+            uri_prefix: /uploads
             upload_destination: s3.storage
             # Will rename uploaded files using a uniqueid as a prefix.
             namer: Vich\UploaderBundle\Naming\SmartUniqueNamer
+            delete_on_remove: true
+            delete_on_update: true
     use_flysystem_to_resolve_uri: true

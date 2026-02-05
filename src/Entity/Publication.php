@@ -10,8 +10,8 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\ApiProperty;
-use ApiPlatform\OpenApi\Model;
 use ApiPlatform\Metadata\Link;
+use ApiPlatform\OpenApi\Model;
 use Symfony\Component\Serializer\Annotation\Groups;
 use App\Repository\PublicationRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -23,32 +23,66 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use App\Controller\PostController;
 use App\Controller\PublicationUpdateController;
-use App\State\PublicationProcessor;
+use App\Controller\UpdatePublicationFileAction;
 
 #[Vich\Uploadable]
 #[ApiResource(
-mercure: true,
-formats: [ 'jsonld', 'multipart' => ['multipart/form-data']],
-operations: [
+formats: ['jsonld' => ['application/ld+json'], 'multipart' => ['multipart/form-data']],
+normalizationContext: ['groups' => ['publication:read', 'tag:read']],
+denormalizationContext: ['groups' => ['publication:create', 'publication:update', 'publication:image']],
+operations: [   
     new Get(),
     new GetCollection(),
     new GetCollection(
         uriTemplate: '/users/{userId}/publications',
         uriVariables: [
             'userId' => new Link(fromClass: User::class, toProperty: 'author')
-        ]
-        ), 
+        ]), 
     new Post(
         //processor: PublicationProcessor::class,
         security: "is_granted('ROLE_USER')",
         controller: PostController::class,
         inputFormats: ['multipart' => ['multipart/form-data']]
         ),
+    new Post(
+        security: "is_granted('ROLE_USER')",
+        uriTemplate: '/publications/{id}/fichier',
+        controller: UpdatePublicationFileAction::class,
+        read: false,
+        inputFormats: ['multipart' => ['multipart/form-data']],
+       // headers: ['accept' => ['multipart/form-data']],
+        deserialize: false,   // très important,
+        serialize: false,
+        denormalizationContext: ['groups' => ['publication:image']],
+        openapi: new Model\Operation(
+            summary: 'Met à jour le fichier de la publication',
+            description: '# Mise à jour du fichier media de la publication',
+            requestBody: new Model\RequestBody(
+                content: new \ArrayObject([
+                    'multipart/form-data' => [
+                        'schema' => [
+                            'type' => 'object',
+                            'properties' => [
+                                'file' => ['type' => 'file']
+                            ]
+                        ],
+                        'example' => [
+                            'file' => 'fichier'
+                        ]
+                    ]
+                ])),
+            responses: [
+                204 => new Model\Response(
+                    description: 'Fichier mis à jour avec succès.')
+            ]
+            )
+        ),
     new Put(
         security: "is_granted('ROLE_ADMIN') or object.author == user",
         inputFormats: ['json' => ['application/ld+json']],
         controller: PublicationUpdateController::class,
-        options: ['methods' => 'POST']
+        options: ['methods' => 'POST'],
+        denormalizationContext: ['groups' => ['publication:update', 'tag:write']]
         ),
     new Patch(
         security: "is_granted('ROLE_ADMIN') or object.author == user",
@@ -57,9 +91,7 @@ operations: [
         
         ),
     new Delete(security: "is_granted('ROLE_ADMIN') or object.author == user"),
-],
-normalizationContext: ['groups' => ['publication:read', 'tag:read']],
-denormalizationContext: ['groups' => ['publication:image', 'publication:create', 'publication:update' ]], 
+]
 )]
 #[ORM\Entity(repositoryClass: PublicationRepository::class)]
 #[UniqueEntity("title")]
@@ -96,7 +128,7 @@ class Publication
     #[Groups(['publication:read', 'tag:read'])]
     private ?\DateTimeInterface $updatedAt = null;
     
-    #[ORM\OneToMany(mappedBy: 'publication', targetEntity: Comment::class,)]
+    #[ORM\OneToMany(mappedBy: 'publication', targetEntity: Comment::class, orphanRemoval: true)]
     #[Groups(['publication:read', 'publication:write'])]
     private Collection $comments;
     
@@ -113,37 +145,34 @@ class Publication
     private Collection $tags;
     
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    #[Groups(['publication:read', 'publication:image'])]
+    #[Groups(['publication:read'])]
     private ?string $filePath; 
     
     #[Assert\File(
         maxSize: '10M',
         maxSizeMessage: 'Le fichier est trop volumineux: { size }. La limite est { limit }',
-        mimeTypes: [
-            'image/jpeg',
-            'image/gif',
-            'image/svg+xml',
-            'audio/mpeg',
-            'audio/ogg',
-            'video/mp4',
-            'video/avi',
-            'video/x-msvideo',
-            'video/webm'
+        mimeTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
+            'audio/mpeg', 'audio/ogg', 'audio/wav',
+            'video/mp4', 'video/webm', 'video/ogg'
         ],
         mimeTypesMessage: 'Ce type de fichier n\'est pas autorisé: les types autorisés sont { types }'
         )]
     #[Vich\UploadableField(
     mapping: 'uploads',
     fileNameProperty: 'filePath',
-    mimeType: 'mimeType', 
+    mimeType: 'mimeType',
+    
     )]
-    #[Groups(['publication:create'])]
+    #[Groups(['publication:create', 'publication:update', 'publication:image'])]
     private ?File $file = null;    
   
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $mimeType = null;
+    
     public function __construct()
     {
-        $this->publishedAt = new \DateTime("now");
-        $this->updatedAt = new \DateTime();
+        $this->publishedAt = new \DateTimeImmutable();
+        $this->updatedAt = new \DateTimeImmutable();
         $this->comments = new ArrayCollection();
         $this->tags = new ArrayCollection();
     }
@@ -205,13 +234,17 @@ class Publication
         return $this->file;
     }
     /**
-     * @param File|null $file
+     * @@param File|\Symfony\Component\HttpFoundation\File\UploadedFile|null $file
      * @return Publication
      */
-    public function setFile($file)
+    public function setFile(?File $file = null): self
     {
         $this->file = $file;
-        return $this;
+        
+        if (null !== $file) {
+            $this->updatedAt = new \DateTimeImmutable();
+        }
+        return $this;   
     }
     /**
      * @return Collection|Comment[]
@@ -261,9 +294,13 @@ class Publication
     }
     public function removeTag(Tag $tag) : self
     {
-        $this->tags->removeElement($tag);
+        if ($this->tags->removeElement($tag)) {
+            $tag->getPublications()->removeElement($this);
+        }  
+        
         return $this;
     }
+    
     public function getFilePath() : ?string
     {
         return $this->filePath;

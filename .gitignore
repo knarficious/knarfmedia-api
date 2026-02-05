@@ -1,9 +1,10 @@
 /docker/db/data
 
 ###> symfony/framework-bundle ###
-/.env.local
-/.env.local.php
-/.env.*.local
+.env
+.env.local
+.env.local.php
+.env.*.local
 /config/secrets/prod/prod.decrypt.private.php
 /public/bundles/
 /public/media
@@ -26,3 +27,4 @@
 ###< lexik/jwt-authentication-bundle ###
 /.buildpath
 /heroku_data.txt
+/ .env.local

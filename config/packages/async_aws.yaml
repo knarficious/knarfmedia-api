@@ -1,13 +1,12 @@
 # Read documentation at https://async-aws.com/integration/symfony-bundle.html
 async_aws:
-    config:
-        region: '%env(AWS_REGION)%'
-#        accessKeyId: '%env(AWS_ACCESS_KEY_ID)%'
-#        secretAccessKey: '%env(AWS_SECRET_ACCESS_KEY)%'
-
-
     # All installed clients are automatically autowired. Use this section to customize clients
     clients:
         s3:
-            config: []
-                #endpoint: '%env(resolve:AWS_ENDPOINT)%'
+            config: 
+                region: '%env(AWS_S3_REGION)%'
+                # Important : endpoint S3 régional
+                endpoint: 'https://s3.%env(AWS_S3_REGION)%.amazonaws.com'
+                accessKeyId: '%env(AWS_S3_ACCESS_KEY_ID)%'
+#                secretAccessKey: '%env(AWS_SECRET_ACCESS_KEY)%'
+#                endpoint: '%env(resolve:AWS_ENDPOINT)%'

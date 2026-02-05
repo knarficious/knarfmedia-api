@@ -18,76 +18,54 @@ final class PublicationUpdateController extends AbstractController
     {
          $data = json_decode($request->getContent(), true);
          
-         $post = $publicationRepository->find($request->attributes->get('id'));
+         $publication = $publicationRepository->find($request->attributes->get('id'));
+         
+         if (!($publication instanceof Publication))
+         {
+             throw new \RuntimeException('L\'objet n\'est pas une instance de Post');
+         }
          
          if (array_key_exists("title", $data)) {
              $title = $data["title"];             
-             $post->setTitle($title);
+             $publication->setTitle($title);
          }
          if (array_key_exists("summary", $data)) {
              $summary = $data["summary"];             
-             $post->setSummary($summary);
+             $publication->setSummary($summary);
          }
          if (array_key_exists("content", $data)) {
              $content = $data["content"];             
-             $post->setContent($content);
+             $publication->setContent($content);
          }
-         if (array_key_exists("tags", $data)) {
-             $tags = $data["tags"];
+         if (array_key_exists("tags", $data) && count($data['tags']) > 0) {
+             $tags = $data["tags"];             
+             
+             foreach ($tags as $tag){
+                 $tagReference = 'App\Entity\Tag';
+                 $tagClass = $em->getReference($tagReference, $tag["id"]);
+                 
+                 if (!$em->contains($tagClass)) {
+                     $publication->addTag($tagClass);
+                     $em->refresh($publication);
+                 }
+                 $tagObjects = $tagRepository->findBy(['id' => $tag["id"]]);
+                 foreach ($tagObjects as $object) {
+                     
+                     $object->addPublication($publication);
+                     $em->refresh($publication);
+                 }
+             }
          }
          
+         if (array_key_exists("tags", $data) && count($data['tags']) == 0) {
+             ;
+         }
          
-        
+         $em->flush();
          
-        
-//         $post->setTitle($data['title']);
-//         $post->setSummary($data['summary']);
-//         $post->setAuthor($this->getUser());
-//         $post->setContent($data['content']);
-//         $post->setPublishedAt(new \DateTime());
-        
-//         return $post;
-
-        
+         $publication->setUpdatedAt(new \DateTimeImmutable());   
             
-            
-            if (!($post instanceof Publication))
-            {
-                throw new \RuntimeException('L\'objet n\'est pas une instance de Post');
-            }
-            
-           //$uploadedFile = $request->files->get('file');
-            //         if (!$uploadedFile) {
-            //             throw new BadRequestHttpException('"file" is required');
-            //         }
-            
-            //$post->setFile($uploadedFile);
-            $post->setUpdatedAt(new \DateTime());
-            $post->setAuthor($this->getUser());
-            if (count($tags) !== 0) {
-                foreach ($tags as $tag){
-                    $tagReference = 'App\Entity\Tag';
-                    $tagClass = $em->getReference($tagReference, $tag["id"]);
-                    
-                    if (!$em->contains($tagClass)) {
-                        $post->addTag($tagClass);
-                        $em->refresh($post);
-                        $em->flush();
-                    }
-                    $tagObjects = $tagRepository->findBy(['id' => $tag["id"]]);
-                    foreach ($tagObjects as $object) {
-                        
-                        $object->addPublication($post);
-                        $em->refresh($post);
-                        $em->flush();
-                    }
-
-                    
-                    
-                }   
-            }
-            
-            return $post;
+         return $publication;
         
     }
 }

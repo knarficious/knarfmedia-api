@@ -51,7 +51,7 @@ class Tag
     private $id;
     
     #[ORM\Column(type: 'string', length: 25)]
-    #[Groups(['tag:read', 'tag:write', 'publication:read', 'publication:create'])]
+    #[Groups(['tag:read', 'tag:write', 'publication:read', 'publication:create', 'publication:update'])]
     #[ApiFilter(SearchFilter::class, strategy: 'partial')]    
     #[Assert\NotBlank]
     private $name;
@@ -88,8 +88,16 @@ class Tag
         if (!$this->publications->contains($publication)) {
             $this->publications[] = $publication;
             $publication->addTag($this);
+        }        
+    }
+    
+    public function removePublication(Publication $publication): self
+    {
+        if ($this->publications->remove($publication)) {
+            $publication->getTags()->remove($this);
         }
         
+        return $this;
     }
     
     public function __toString() {
