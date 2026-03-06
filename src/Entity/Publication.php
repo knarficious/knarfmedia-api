@@ -24,9 +24,11 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use App\Controller\PostController;
 use App\Controller\PublicationUpdateController;
 use App\Controller\UpdatePublicationFileAction;
+use App\State\PublicationProcessor;
 
 #[Vich\Uploadable]
 #[ApiResource(
+    mercure: true,
 formats: ['jsonld' => ['application/ld+json'], 'multipart' => ['multipart/form-data']],
 normalizationContext: ['groups' => ['publication:read', 'tag:read']],
 denormalizationContext: ['groups' => ['publication:create', 'publication:update', 'publication:image']],
@@ -39,10 +41,11 @@ operations: [
             'userId' => new Link(fromClass: User::class, toProperty: 'author')
         ]), 
     new Post(
-        //processor: PublicationProcessor::class,
+        processor: PublicationProcessor::class,
         security: "is_granted('ROLE_USER')",
-        controller: PostController::class,
-        inputFormats: ['multipart' => ['multipart/form-data']]
+        inputFormats: ['multipart' => ['multipart/form-data']],
+        validationContext: ['groups' => ['Default', 'publication:create']],
+        denormalizationContext: ['groups' => ['publication:create', 'tag:item:get']]
         ),
     new Post(
         security: "is_granted('ROLE_USER')",
@@ -53,7 +56,6 @@ operations: [
        // headers: ['accept' => ['multipart/form-data']],
         deserialize: false,   // très important,
         serialize: false,
-        denormalizationContext: ['groups' => ['publication:image']],
         openapi: new Model\Operation(
             summary: 'Met à jour le fichier de la publication',
             description: '# Mise à jour du fichier media de la publication',
@@ -109,11 +111,11 @@ class Publication
     private $title = null;
     
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['publication:read', 'publication:create', 'publication:update'])]
+    #[Groups(['publication:read', 'publication:create', 'publication:update', 'tag:read'])]
     private $summary = null;
     
     #[ORM\Column(type: 'text')]
-    #[Groups(['publication:read', 'publication::create', 'publication:update'])]
+    #[Groups(['publication:read', 'publication:create', 'publication:update'])]
     private $content = null;
     
     #[ApiProperty(iris: ['https://schema.org/dateCreated'])]
@@ -129,41 +131,41 @@ class Publication
     private ?\DateTimeInterface $updatedAt = null;
     
     #[ORM\OneToMany(mappedBy: 'publication', targetEntity: Comment::class, orphanRemoval: true)]
-    #[Groups(['publication:read', 'publication:write'])]
+    #[Groups(['publication:read', 'comment:read', 'comment:item:get'])]
     private Collection $comments;
     
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'posts')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['publication:read'])]
+    #[Groups(['publication:read', 'tag:read'])]
     #[Link(toProperty: 'author')]
     private ?User $author;
     
     #[ORM\ManyToMany(targetEntity: Tag::class, mappedBy: 'publications')]
     #[ORM\JoinTable(name: 'post_tag')]
     #[Groups(['publication:read', 'publication:create', 'publication:update', 'tag:item:get'])]
-    #[Link(toProperty: 'post')]
+    #[Link(toProperty: 'publication')]
     private Collection $tags;
     
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     #[Groups(['publication:read'])]
     private ?string $filePath; 
     
-    #[Assert\File(
-        maxSize: '10M',
-        maxSizeMessage: 'Le fichier est trop volumineux: { size }. La limite est { limit }',
-        mimeTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
-            'audio/mpeg', 'audio/ogg', 'audio/wav',
-            'video/mp4', 'video/webm', 'video/ogg'
-        ],
-        mimeTypesMessage: 'Ce type de fichier n\'est pas autorisé: les types autorisés sont { types }'
-        )]
+//     #[Assert\File(
+//         maxSize: '10M',
+//         maxSizeMessage: 'Le fichier est trop volumineux: { size }. La limite est { limit }',
+//         mimeTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
+//             'audio/mpeg', 'audio/ogg', 'audio/wav',
+//             'video/mp4', 'video/webm', 'video/ogg'
+//         ],
+//         mimeTypesMessage: 'Ce type de fichier n\'est pas autorisé: les types autorisés sont { types }'
+//         )]
+    #[Assert\NotNull(groups: ['publication:image'])]
     #[Vich\UploadableField(
     mapping: 'uploads',
     fileNameProperty: 'filePath',
-    mimeType: 'mimeType',
-    
+    mimeType: 'mimeType',    
     )]
-    #[Groups(['publication:create', 'publication:update', 'publication:image'])]
+    #[Groups(['publication:create', 'publication:image'])]
     private ?File $file = null;    
   
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
@@ -324,6 +326,15 @@ class Publication
     
     public function __toString() {
         return $this->title;
+    }
+    
+    #[Mercure\Expose]
+    public function getMercureTopics(): array
+    {
+        return [
+            'https://knarfmedia.local.dev/publications/' . $this->getId(),
+            'https://knarfmedia.local.dev/publications/' . $this->getId() . '/comments'
+        ];
     }
 
 

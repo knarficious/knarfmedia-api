@@ -23,6 +23,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
 use App\Controller\PostCommentController;
+use PhpCsFixer\DocBlock\Line;
 
 #[ApiResource(
 
@@ -44,12 +45,49 @@ operations: [
     new Post(
         uriTemplate: '/publications/{publicationId}/commenter',
         uriVariables: [
-            'publicationId' => new Link(fromClass: Publication::class, toProperty: 'publication')
+            'publicationId' => new Link(
+                fromClass: Publication::class,
+                toProperty: 'publication',
+                identifiers: ['id'],
+                constraints: [
+                    new Assert\Regex(
+                        pattern: '/^\d+$/',
+                        message: 'L\'ID de la publication doit être un nombre entier positif'
+                        )
+                ]
+                )
         ],
         security: "is_granted('ROLE_USER')",
         provider: CreateProvider::class,
-        processor: CommentaireProcessor::class
-        //controller: PostCommentController::class
+        processor: CommentaireProcessor::class,
+        output: Comment::class,
+        name: 'post_comment_root'
+        ),
+    new Post(
+        uriTemplate: '/publications/{publicationId}/repliquer/{commentId}',
+        uriVariables: [
+            'publicationId' => new Link(
+                fromClass: Publication::class,
+                toProperty: 'publication',
+                identifiers: ['id']
+                ),
+            'commentId' => new Link(
+                fromClass: self::class,
+                toProperty: 'parent',
+                identifiers: ['id'],
+                constraints: [                    
+                    new Assert\Regex(
+                        pattern: '/^\d+$/',
+                        message: 'L\'ID de la publication doit être un nombre entier positif'
+                        )
+                ]
+                )
+        ],        
+        security: "is_granted('ROLE_USER')",
+        //provider: CreateProvider::class,
+        processor: CommentaireProcessor::class,
+        output: Comment::class,
+        name: 'post_comment_reply'
         ),
     new Put(security: "object.getAuthor() == user"),
     new Patch(security: "object.getAuthor() == user"),
@@ -57,7 +95,7 @@ operations: [
 ],
 denormalizationContext: ['groups' => ['comment:write']], 
 mercure: true, 
-normalizationContext: ['groups' => ['comment:read']]
+normalizationContext: ['groups' => ['comment:read', 'user:comments:read']]
 )]
 
 #[ApiFilter(SearchFilter::class, properties: [
@@ -77,8 +115,8 @@ class Comment
     #[ApiProperty]
     #[ORM\ManyToOne(targetEntity: Publication::class, inversedBy: 'comments')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['comment:read', 'publication:update  '])]
-    private ?Publication $publication = null;    
+    #[Groups(['comment:read', 'user:comments:read', 'comment:item:read', 'publication:update'])]
+    private ?Publication $publication;    
     
     #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'children')]
     #[Groups(['comment:write', 'comment:read', 'publication:read'])]
@@ -113,6 +151,8 @@ class Comment
     {
         return $this->id;
     }
+
+    #[Groups(['comment:read', 'publication:read'])]
     public function getPublication() : ?Publication
     {
         return $this->publication;

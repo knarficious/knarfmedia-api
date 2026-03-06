@@ -99,8 +99,7 @@ RUN set -eux; \
 	composer dump-env prod; \
 	composer run-script --no-dev post-install-cmd; \
 	chmod +x bin/console; sync;	\
-	bin/console sylius:install:assets --no-interaction; \
-	bin/console sylius:theme:assets:install public --no-interaction
+	bin/console lexik:jwt:generate-keypair --overwrite;
 
 ###> recipes ###
 ###> doctrine/doctrine-bundle ###

@@ -34,7 +34,7 @@ operations: [
     new Delete(security: "is_granted('ROLE_ADMIN')")
 ],
 normalizationContext: [
-    'groups' => ['tag:read', 'publication:read'],
+    'groups' => ['tag:read', 'publication:read', 'tag:item:get'],
 ],
 denormalizationContext: [
     'groups' => ['tag:write'],
