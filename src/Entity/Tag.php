@@ -93,8 +93,8 @@ class Tag
     
     public function removePublication(Publication $publication): self
     {
-        if ($this->publications->remove($publication)) {
-            $publication->getTags()->remove($this);
+        if ($this->publications->removeElement($publication)) {
+            $publication->getTags()->removeElement($this);
         }
         
         return $this;
