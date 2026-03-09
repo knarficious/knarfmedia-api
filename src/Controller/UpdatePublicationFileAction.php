@@ -28,7 +28,7 @@ final class UpdatePublicationFileAction extends AbstractController
         
         $uploadedFile = $request->files->get('file');
         
-        if (!$uploadedFile instanceof \Symfony\Component\HttpFoundation\File\UploadedFile) {
+        if (null === $uploadedFile || !$uploadedFile instanceof \Symfony\Component\HttpFoundation\File\UploadedFile) {
             throw new BadRequestHttpException('Le champ "file" est requis et doit être un fichier valide.');
         }
         

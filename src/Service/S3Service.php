@@ -65,6 +65,7 @@ class S3Service
                 'Bucket' => $this->bucket,
                 'Key' => $key,
                 'Body' => $handle,
+                'ServerSideEncryption' => 'AES256',
                 'ContentType' => $contentType,
                 'ContentLength' => $size, // important pour streaming
                 // AUCUN ACL → Bucket owner enforced + policy publique
