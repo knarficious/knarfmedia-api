@@ -83,8 +83,8 @@ final class PublicationProcessor implements ProcessorInterface
         if (!in_array($file->getMimeType(), $allowed, true)) {
             throw new BadRequestHttpException('Invalid file type.');
         }
-        if ($file->getSize() > 10 * 1024 * 1024) {
-            throw new BadRequestHttpException('File too large (max 10MB).');
+        if ($file->getSize() > 20 * 1024 * 1024) {
+            throw new BadRequestHttpException('File too large (max 20MB).');
         }
     }
     
