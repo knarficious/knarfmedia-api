@@ -17,7 +17,7 @@ use App\Repository\PublicationRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Vich\UploaderBundle\Mapping\Annotation as Vich;
+use Vich\UploaderBundle\Mapping\Attribute as Vich;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -149,6 +149,10 @@ class Publication
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     #[Groups(['publication:read'])]
     private ?string $filePath; 
+    
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups(['publication:read'])]
+    private ?string $coverPath = null;
     
 //     #[Assert\File(
 //         maxSize: '10M',
@@ -321,6 +325,17 @@ class Publication
     public function setMimeType(?string $mimeType): self
     {
         $this->mimeType = $mimeType;
+        return $this;
+    }
+    
+    public function getCoverPath(): ?string
+    {
+        return $this->coverPath;
+    }
+    
+    public function setCoverPath(?string $coverPath): self
+    {
+        $this->coverPath = $coverPath;
         return $this;
     }
     
