@@ -29,7 +29,7 @@ class S3Service
                 $this->logger->debug('S3Service init', [
                     'bucket' => $this->bucket,
                     'region' => $awsRegion,
-                    'client_region' => $this->s3->getConfiguration()['region'] ?? 'unknown',
+                    //'client_region' => $this->s3->getConfiguration()['region'] ?? 'unknown',
                 ]);
             }
     }
@@ -105,7 +105,7 @@ class S3Service
             $this->s3->deleteObject(new DeleteObjectRequest([
                 'Bucket' => $this->bucket,
                 'Key' => $key,
-            ]))->wait();
+            ]));
             
             if ($this->logger) {
                 $this->logger->info('Suppression S3 réussie', ['key' => $key]);

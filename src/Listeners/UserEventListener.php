@@ -24,7 +24,7 @@ class UserEventListener
         // generate a signed url and email it to the user
         $this->emailVerifier->sendEmailConfirmation('app_verify_email', $user,
             (new TemplatedEmail())
-            ->from(new Address('no-reply@jaurinformatique.fr', 'Knarf Media'))
+            ->from(new Address('no-reply@franckruer.fr', 'Knarf Media'))
             ->to($user->getEmail())
             ->subject('Veuillez confirmer votre Email')
             ->htmlTemplate('registration/confirmation_email.html.twig')

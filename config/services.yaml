@@ -56,11 +56,17 @@ services:
     App\Encoder\MultipartDecoder:
         tags: ['serializer.decoder', 'serializer.encoder']
                 
-    App\EventSubscriber\S3Subscriber:
-        class: App\EventSubscriber\S3Subscriber
+#    App\EventSubscriber\S3Subscriber:
+#        class: App\EventSubscriber\S3Subscriber
+#        arguments:
+#            $projectDir: '%kernel.project_dir%'
+#            $bucket: string
+
+    App\EventSubscriber\MediaObjectS3Subscriber:
         arguments:
-            $projectDir: '%kernel.project_dir%'
-            $bucket: string
+            $bucketName: '%env(AWS_S3_BUCKET)%'   # ou directement 'jaur-compartiment'
+        tags:
+            - { name: doctrine.event_subscriber }
 
     App\Mime\NullMimeTypeGuesser:
         tags:
@@ -84,8 +90,27 @@ services:
         arguments:
             $persistProcessor: "@api_platform.doctrine.orm.state.persist_processor"
         tags: ["api_platform.state_processor"]
+        
+    App\State\PostPublicationProcessor:
+        arguments:
+            $persistProcessor: "@api_platform.doctrine.orm.state.persist_processor"
+        tags: ["api_platform.state_processor"]
+        
+    App\State\PublicationUpdateProcessor:
+        arguments:
+            $persistProcessor: "@api_platform.doctrine.orm.state.persist_processor"
+        tags: ["api_platform.state_processor"]
             
     App\State\CommentaireProcessor: 
         arguments:
             $persistProcessor: "@api_platform.doctrine.orm.state.persist_processor"
         tags: ["api_platform.state_processor"]
+        
+    App\State\MediaObjectDataPersister:
+        arguments:
+            $persistProcessor: "@api_platform.doctrine.orm.state.persist_processor"
+        tags: ["api_platform.state_processor"]
+        
+    App\Serializer\MediaObjectNormalizer:
+        tags:
+            - { name: serializer.normalizer, priority: -10 }
