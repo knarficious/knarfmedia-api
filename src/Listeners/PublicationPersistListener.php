@@ -37,10 +37,13 @@ final class PublicationPersistListener
         // Optional: check if file was actually uploaded/changed
         // You can inspect UnitOfWork change set if needed
         // For simplicity: always check extension if filePath exists
-        $filePath = $entity->getFilePath();  // adjust getter name
-
-        if (!$filePath || !str_ends_with(strtolower($filePath), '.mp3')) {
-            return;
+        $files = $entity->getFiles();  // adjust getter name
+        
+        foreach ($files as $file) {
+            $fileName = $file->getFileName();
+            if (!$fileName || !str_ends_with(strtolower($fileName), '.mp3')) {
+                return;
+            }
         }
 
         $id = $entity->getId();
