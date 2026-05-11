@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use AsyncAws\S3\S3Client;
+use AsyncAws\S3\Input\GetObjectRequest;
 use AsyncAws\S3\Input\PutObjectRequest;
 use AsyncAws\S3\Input\DeleteObjectRequest;
 use AsyncAws\Core\Exception\Http\ClientException;
@@ -17,8 +18,9 @@ class S3Service
     
     public function __construct(
         private S3Client $s3,
-        #[Autowire('%env(AWS_S3_BUCKET)%')] string $awsS3Bucket,
-        #[Autowire('%env(AWS_REGION)%')] string $awsRegion,
+        #[Autowire('%env(AWS_S3_BUCKET)%')] private string $awsS3Bucket,
+        #[Autowire('%env(AWS_REGION)%')] private string $awsRegion,
+        #[Autowire('%env(AWS_S3_PREFIX)%')] private string $prefix,
         private ?LoggerInterface $logger = null // optionnel pour debug
         ) {
             $this->bucket = $awsS3Bucket;
@@ -53,7 +55,7 @@ class S3Service
         
         // Génération clé unique + sécurisée (SmartUniqueNamer-like)
         $extension = pathinfo($originalName, PATHINFO_EXTENSION) ?: pathinfo($source, PATHINFO_EXTENSION);
-        $key = $key ?? 'uploads/' . uniqid('file_', true) . '.' . strtolower($extension);
+        $key = $key ?? 'symfony/' . uniqid('file_', true) . '.' . strtolower($extension);
         
         $handle = fopen($source, 'r');
         if (!$handle) {
@@ -70,7 +72,7 @@ class S3Service
                 'ContentLength' => $size, // important pour streaming
                 // AUCUN ACL → Bucket owner enforced + policy publique
                 'Metadata' => [
-                    'uploaded-by' => 'symfony-api',
+                    'uploaded-by' => 'knarficious',
                     'original-name' => $originalName,
                 ],
             ]);
@@ -91,7 +93,7 @@ class S3Service
             
         } catch (ClientException $e) {
             fclose($handle);
-            $msg = "Erreur upload S3 ({$e->getStatusCode()}): {$e->getMessage()}";
+            $msg = "Erreur upload S3 ({$e->getResponse()->getStatusCode()}): {$e->getMessage()}";
             if ($this->logger) {
                 $this->logger->error($msg, ['key' => $key, 'exception' => $e->getMessage()]);
             }
@@ -112,7 +114,7 @@ class S3Service
             }
             
         } catch (ClientException $e) {
-            if ($e->getStatusCode() !== 404) {
+            if ($e->getResponse()->getStatusCode() !== 404) {
                 $msg = 'Erreur suppression S3 : ' . $e->getMessage();
                 if ($this->logger) {
                     $this->logger->error($msg, ['key' => $key]);
@@ -128,12 +130,21 @@ class S3Service
         return $this->baseUrl . '/' . ltrim($key, '/');
     }
     
-    // Bonus : URL presigned (pour téléchargements temporaires sécurisés)
     public function getPresignedUrl(string $key, int $expiresInSeconds = 3600): string
     {
-        return $this->s3->createPresignedRequest(
-            $this->s3->getCommand('GetObject', ['Bucket' => $this->bucket, 'Key' => $key]),
-            now()->addSeconds($expiresInSeconds)
-            )->getUri();
+        // Ajoute le préfixe si absent
+        if (!str_starts_with($key, $this->prefix . '/')) {
+            $key = $this->prefix . '/' . ltrim($key, '/');
+        }
+        
+        $input = new GetObjectRequest([
+            'Bucket' => $this->bucket,
+            'Key'    => $key,
+        ]);
+        
+        return $this->s3->presign(
+            $input,
+            new \DateTimeImmutable("+{$expiresInSeconds} seconds")
+            );
     }
 }

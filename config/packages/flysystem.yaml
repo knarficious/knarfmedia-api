@@ -6,5 +6,5 @@ flysystem:
       options:
         client: 'AsyncAws\S3\S3Client'
         bucket: '%env(AWS_S3_BUCKET)%'
-        prefix: 'uploads'
+        prefix: '%env(AWS_S3_PREFIX)%'
 

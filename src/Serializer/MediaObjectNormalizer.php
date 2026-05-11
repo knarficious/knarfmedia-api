@@ -3,6 +3,7 @@
 namespace App\Serializer;
 
 use App\Entity\MediaObject;
+use App\Service\S3Service;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
@@ -15,6 +16,7 @@ final class MediaObjectNormalizer implements NormalizerInterface, NormalizerAwar
     private const ALREADY_CALLED = 'MEDIA_OBJECT_NORMALIZER_ALREADY_CALLED';
     
     public function __construct(
+        private S3Service $s3Service,
         private readonly StorageInterface $storage
         ) {}
         
@@ -33,19 +35,22 @@ final class MediaObjectNormalizer implements NormalizerInterface, NormalizerAwar
             
             $context[self::ALREADY_CALLED] = true;
             
-            if ($object instanceof MediaObject) {
-                // Génère l'URL S3 si elle n'existe pas encore
-                if (empty($object->contentUrl)) {
-                    try {
-                        $object->contentUrl = $this->storage->resolveUri($object, 'file');
-                    } catch (\Exception $e) {
-                        $this->logger?->warning('Impossible de générer contentUrl pour MediaObject', ['id' => $object->getId()]);
-                        $object->contentUrl = null;
-                    }
+            /** @var MediaObject $object */
+            
+            // Génère l'URL pré-signée à partir du fileName (clé S3)
+            if (!empty($object->getFileName())) {
+                try {
+                    $object->setContentUrl(
+                        $this->s3Service->getPresignedUrl($object->getFileName(), 3600)
+                        );
+                } catch (\Exception $e) {
+                    $this->logger?->warning('Impossible de générer une URL pré-signée', [
+                        'id'       => $object->getId(),
+                        'fileName' => $object->getFileName(),
+                        'error'    => $e->getMessage(),
+                    ]);
+                    $object->setContentUrl(null);
                 }
-                
-                // On NE supprime PLUS la relation publication (trop risqué)
-                // On laisse le normalizer principal gérer la récursion avec le flag ALREADY_CALLED
             }
             
             $normalized = $this->normalizer->normalize($object, $format, $context);

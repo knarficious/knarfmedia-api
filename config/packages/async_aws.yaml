@@ -6,7 +6,7 @@ async_aws:
             config: 
                 region: '%env(AWS_S3_REGION)%'
                 # Important : endpoint S3 régional
-                endpoint: 'https://s3.%env(AWS_S3_REGION)%.amazonaws.com'
+#                endpoint: 'https://s3.%env(AWS_S3_REGION)%.amazonaws.com'
                 accessKeyId: '%env(AWS_S3_ACCESS_KEY_ID)%'
-#                secretAccessKey: '%env(AWS_SECRET_ACCESS_KEY)%'
+                secretAccessKey: '%env(AWS_SECRET_ACCESS_KEY)%'
 #                endpoint: '%env(resolve:AWS_ENDPOINT)%'

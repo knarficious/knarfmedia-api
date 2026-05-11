@@ -17,7 +17,6 @@ class MediaObjectS3Subscriber implements EventSubscriber
     public function __construct(
         private readonly S3Service $s3Service,
         private readonly LoggerInterface $logger,
-        private readonly string $bucketName,   // ex: 'jaur-compartiment'
     ) {}
 
     /**
@@ -40,6 +39,12 @@ class MediaObjectS3Subscriber implements EventSubscriber
         }
 
         $key = $entity->getFileName() ?? $entity->getContentUrl();
+        
+        $this->logger->debug('Clé S3 avant suppression', [
+            'fileName'   => $entity->getFileName(),
+            'contentUrl' => $entity->getContentUrl(),
+            'keyResolu'  => $key,
+        ]);
 
         if (empty($key)) {
             $this->logger->warning('MediaObject supprimé sans chemin S3', ['id' => $entity->getId()]);
@@ -51,9 +56,12 @@ class MediaObjectS3Subscriber implements EventSubscriber
             $key = parse_url($key, PHP_URL_PATH);
             $key = ltrim($key, '/');
         }
+        
+        // 👇 Log de la clé finale envoyée à S3
+        $this->logger->debug('Clé S3 finale envoyée', ['key' => $key]);
 
         try {
-            $this->s3Service->delete($this->bucketName, $key);
+            $this->s3Service->delete($key);
             $this->logger->info("Fichier supprimé avec succès de S3", [
                 'mediaObjectId' => $entity->getId(),
                 'key' => $key
