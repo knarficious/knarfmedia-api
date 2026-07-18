@@ -24,16 +24,8 @@ class S3Service
         private ?LoggerInterface $logger = null // optionnel pour debug
         ) {
             $this->bucket = $awsS3Bucket;
-            $this->baseUrl = "https://{$awsS3Bucket}.s3.{$awsRegion}.amazonaws.com";
-            
-            // Debug : log les infos client (retirez en prod)
-            if ($this->logger) {
-                $this->logger->debug('S3Service init', [
-                    'bucket' => $this->bucket,
-                    'region' => $awsRegion,
-                    //'client_region' => $this->s3->getConfiguration()['region'] ?? 'unknown',
-                ]);
-            }
+            $this->baseUrl = "https://{$awsS3Bucket}.s3.{$awsRegion}.amazonaws.com";          
+
     }
     
     public function upload(mixed $file, ?string $key = null, ?string $contentType = null): string
@@ -55,7 +47,7 @@ class S3Service
         
         // Génération clé unique + sécurisée (SmartUniqueNamer-like)
         $extension = pathinfo($originalName, PATHINFO_EXTENSION) ?: pathinfo($source, PATHINFO_EXTENSION);
-        $key = $key ?? 'symfony/' . uniqid('file_', true) . '.' . strtolower($extension);
+        $key = $key ?? $this->prefix . '/' . uniqid('file_', true) . '.' . strtolower($extension);
         
         $handle = fopen($source, 'r');
         if (!$handle) {
@@ -103,10 +95,15 @@ class S3Service
     
     public function delete(string $key): void
     {
+        // Ajoute le préfixe si absent
+        if (!str_starts_with($key, $this->prefix . '/')) {
+            $key = $this->prefix . '/' . ltrim($key, '/');
+        }
+        
         try {
             $this->s3->deleteObject(new DeleteObjectRequest([
                 'Bucket' => $this->bucket,
-                'Key' => $key,
+                'Key'    => $key,  // ← plus de fallback 'symfony/' hardcodé
             ]));
             
             if ($this->logger) {
@@ -114,14 +111,18 @@ class S3Service
             }
             
         } catch (ClientException $e) {
-            if ($e->getResponse()->getStatusCode() !== 404) {
+            $statusCode = $e->getResponse()->getStatusCode();
+            
+            if (!in_array($statusCode, [403, 404])) {
                 $msg = 'Erreur suppression S3 : ' . $e->getMessage();
-                if ($this->logger) {
-                    $this->logger->error($msg, ['key' => $key]);
-                }
+                $this->logger?->error($msg, ['key' => $key]);
                 throw new \RuntimeException($msg, 0, $e);
             }
-            // Silencieux si 404 (déjà supprimé)
+            
+            $this->logger?->warning('Suppression S3 ignorée', [
+                'key'    => $key,
+                'status' => $statusCode,
+            ]);
         }
     }
     
