@@ -11,7 +11,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\Link;
-use ApiPlatform\OpenApi\Model;
+use ApiPlatform\Metadata\UrlGeneratorInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\String\Slugger\AsciiSlugger;
 use App\Repository\PublicationRepository;
@@ -27,7 +27,11 @@ use App\State\PostPublicationProcessor;
 use App\State\PublicationUpdateProcessor;
 
 #[ApiResource(
-    mercure: true,
+    mercure: [
+        'topics' => [
+            '@=iri(object, ' . UrlGeneratorInterface::ABS_URL . ', get_operation(object, "/publications/{id}{._format}"))',
+        ],
+    ],
     formats: ['jsonld' => ['application/ld+json'], 'multipart' => ['multipart/form-data']],
     normalizationContext: ['groups' => ['publication:read', 'tag:read']],
     denormalizationContext: ['groups' => ['publication:create', 'publication:update', 'publication:image']],
@@ -293,16 +297,8 @@ class Publication
     
     public function __toString() {
         return $this->slug;
-    }
-    
-    #[Mercure\Expose]
-    public function getMercureTopics(): array
-    {
-        return [
-            'https://knarfmedia.local.dev/publications/' . $this->getId(),
-            'https://knarfmedia.local.dev/publications/' . $this->getId() . '/comments'
-        ];
-    }
+    }    
+
 
     public function getSlug(): ?string
     {
