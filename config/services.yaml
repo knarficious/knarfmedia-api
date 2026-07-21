@@ -83,11 +83,6 @@ services:
             $ttl: 2592000
         tags:
             - { name: kernel.event_listener, event: lexik_jwt_authentication.on_authentication_success, method: onAuthenticationSuccessResponse }
-            
-    App\State\PublicationProcessor:
-        arguments:
-            $persistProcessor: "@api_platform.doctrine.orm.state.persist_processor"
-        tags: ["api_platform.state_processor"]
         
     App\State\PostPublicationProcessor:
         arguments:
