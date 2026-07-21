@@ -15,6 +15,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use DateTimeImmutable;
 use Vich\UploaderBundle\Mapping\Attribute as Vich;
 use App\Controller\CreateMediaObjectAction;
 use App\Repository\MediaObjectRepository;
@@ -149,7 +150,7 @@ use App\Repository\MediaObjectRepository;
         }
     
         /**
-         * @return \App\Entity\DateTimeImmutable
+         * @return \DateTimeImmutable
          */
         public function getUpdatedAt(): ?\DateTimeImmutable
         {
@@ -159,7 +160,7 @@ use App\Repository\MediaObjectRepository;
         /**
          * @param string $fileOriginalName
          */
-        public function setFileOriginalName($fileOriginalName): void
+        public function setFileOriginalName(string $fileOriginalName): void
         {
             $this->fileOriginalName = $fileOriginalName;
         }
@@ -167,15 +168,15 @@ use App\Repository\MediaObjectRepository;
         /**
          * @param string $contentUrl
          */
-        public function setContentUrl($contentUrl): void
+        public function setContentUrl(string $contentUrl): void
         {
             $this->contentUrl = $contentUrl;
         }
     
         /**
-         * @param \App\Entity\DateTimeImmutable $updatedAt
+         * @param $updatedAt
          */
-        public function setUpdatedAt($updatedAt): void
+        public function setUpdatedAt(?\DateTimeImmutable $updatedAt): void
         {
             $this->updatedAt = $updatedAt;
         }

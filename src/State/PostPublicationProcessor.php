@@ -77,9 +77,7 @@ final class PostPublicationProcessor implements ProcessorInterface
         if (!$user) {
             throw new AccessDeniedException('User must be authenticated.');
         }
-        $data->setAuthor($user); 
-        
-        $data->generateSlug();
+        $data->setAuthor($user);
         
         // Set dates if not already (your constructor does it, but to be sure)
         if (null === $data->getPublishedAt()) {

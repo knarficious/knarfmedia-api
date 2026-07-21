@@ -12,7 +12,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\UrlGeneratorInterface;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\String\Slugger\AsciiSlugger;
 use App\Repository\PublicationRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -33,7 +33,7 @@ use App\State\PublicationUpdateProcessor;
         ],
     ],
     formats: ['jsonld' => ['application/ld+json'], 'multipart' => ['multipart/form-data']],
-    normalizationContext: ['groups' => ['publication:read', 'tag:read']],
+    normalizationContext: ['groups' => ['publication:read', 'tag:read', 'rubrique:read']],
     denormalizationContext: ['groups' => ['publication:create', 'publication:update', 'publication:image']],
     operations: [   
     new Get(),
@@ -69,6 +69,7 @@ use App\State\PublicationUpdateProcessor;
 ]
 )]
 #[ORM\Entity(repositoryClass: PublicationRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 #[UniqueEntity("slug")]
 class Publication
 {    
@@ -80,7 +81,7 @@ class Publication
     private $id;
     
     #[ORM\Column(type: 'string', length: 180)]
-    #[Groups(['publication:read', 'publication:create', 'publication:update', 'tag:read'])]
+    #[Groups(['publication:read', 'publication:create', 'publication:update', 'tag:read', 'rubrique:read'])]
     private $title = null;
     
     #[ORM\Column(type: 'string', length: 255)]
@@ -127,6 +128,11 @@ class Publication
     #[ORM\Column(type: 'string', length: 255, unique: true)]
     #[Groups(['publication:read', 'publication:update', 'tag:read'])]
     private ?string $slug = null;
+
+    #[ORM\ManyToOne(inversedBy: 'publications')]
+    #[Groups(['publication:read', 'publication:create', 'publication:update'])]
+    #[Link(toProperty: 'rubrique')]
+    private ?Rubrique $rubrique = null;
     
     public function __construct()
     {
@@ -308,6 +314,18 @@ class Publication
     public function setSlug(string $slug): static
     {
         $this->slug = $slug;
+
+        return $this;
+    }
+
+    public function getRubrique(): ?Rubrique
+    {
+        return $this->rubrique;
+    }
+
+    public function setRubrique(?Rubrique $rubrique): static
+    {
+        $this->rubrique = $rubrique;
 
         return $this;
     }

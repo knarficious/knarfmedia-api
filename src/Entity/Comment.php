@@ -22,7 +22,6 @@ use App\State\CommentaireProcessor;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
-use App\Controller\PostCommentController;
 use PhpCsFixer\DocBlock\Line;
 
 #[ApiResource(

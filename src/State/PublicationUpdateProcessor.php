@@ -45,6 +45,22 @@ final class PublicationUpdateProcessor implements ProcessorInterface
                 if ($body) {
                     $patchData = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
                     
+                    if (isset($patchData['rubrique'])) {
+                        $rubriqueIri = $patchData['rubrique'];
+                        
+                        if (is_string($rubriqueIri) && str_contains($rubriqueIri, '/')) {
+                            $rubriqueId = (int) substr($rubriqueIri, strrpos($rubriqueIri, '/') + 1);
+                            $rubrique = $this->entityManager->getRepository(\App\Entity\Rubrique::class)->find($rubriqueId);
+                            
+                            if ($rubrique) {
+                                $data->setRubrique($rubrique);
+                            }
+                        } elseif ($rubriqueIri instanceof \App\Entity\Rubrique) {
+                            // Déjà désérialisé par API Platform
+                            $data->setRubrique($rubriqueIri);
+                        }
+                    }
+                    
                     if (isset($patchData['title'])) {
                         $data->setTitle($patchData['title']);
                     }
