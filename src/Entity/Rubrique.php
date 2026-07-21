@@ -38,7 +38,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     )]
 #[ORM\Entity(repositoryClass: RubriqueRepository::class)]
 #[ORM\HasLifecycleCallbacks]
-#[UniqueEntity(fields: ['slug'], message: 'Il y a déjà une rubrique de ce nom')]
+#[UniqueEntity(fields: ['titre'], message: 'Il y a déjà une rubrique de ce nom')]
 class Rubrique
 {
     #[ORM\Id]
@@ -100,6 +100,7 @@ class Rubrique
     public function setTitre(string $titre): static
     {
         $this->titre = $titre;
+        $this->generateSlug();
 
         return $this;
     }

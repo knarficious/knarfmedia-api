@@ -70,7 +70,7 @@ use App\State\PublicationUpdateProcessor;
 )]
 #[ORM\Entity(repositoryClass: PublicationRepository::class)]
 #[ORM\HasLifecycleCallbacks]
-#[UniqueEntity("slug")]
+#[UniqueEntity(fields: ["title"], message: "Une publication avec un titre similaire existe déjà.")]
 class Publication
 {    
     
@@ -164,6 +164,7 @@ class Publication
     public function setTitle(string $title) : self
     {
         $this->title = $title;
+        $this->generateSlug();
         return $this;
     }
     
